@@ -9,4 +9,16 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(tau main.c)
+# Include scripts
+include(cmake/FetchCMocka.cmake)
+
+# Macros
+macro(setup_test TARGET TEST_SOURCES)
+    add_executable(${TARGET} ${ARGN} ${TARGET}.c)
+    target_link_libraries(${TARGET} PRIVATE cmocka-static)
+    add_test(NAME ${TARGET} COMMAND ${TARGET})
+endmacro()
+
+# Testing
+enable_testing()
+setup_test(test_dummy test_dummy.c)

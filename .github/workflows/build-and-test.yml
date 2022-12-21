@@ -1,0 +1,24 @@
+name: Build and test
+on: [ push ]
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: RafikFarhad/clang-format-github-action@v2.1.0
+        with:
+          sources: "*.c,*.h"
+
+            # build-and-test:
+            #   needs: [ clang-format ]
+            #   runs-on: ubuntu-latest
+            #   steps:
+            #     - uses: actions/checkout@v3
+            #     - uses: seanmiddleditch/gha-setup-ninja@master
+            #     - run: |
+            #         mkdir cmake-build-debug
+            #         cd cmake-build-debug
+            #         cmake -GNinja ..
+            #         ninja
+            #         ninja test

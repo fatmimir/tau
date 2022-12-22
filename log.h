@@ -6,6 +6,7 @@
 #define TAU_LOG_H
 
 #include <stddef.h>
+
 #include "common.h"
 
 enum tau_log_level {
@@ -18,4 +19,4 @@ enum tau_log_level {
 
 void tau_log(enum tau_log_level level, struct tau_loc loc, const char *fmt, ...);
 
-#endif // TAU_LOG_H
+#endif  // TAU_LOG_H

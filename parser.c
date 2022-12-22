@@ -3,56 +3,57 @@
 //
 
 #include "parser.h"
-#include "log.h"
-#include "utf8.h"
 
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define ASSERT_PARSER(p)                                                                                               \
-  do {                                                                                                                 \
-    assert((p) != NULL && "parser: cannot be null");                                                                   \
-    assert((p)->buf_size > 0 && "parser->buf_len: cannot be zero");                                                    \
-    assert((p)->cur_offset != NULL && "parser->cur_offset: cannot be null");                                           \
-    assert((p)->cur_offset <= (p)->buf_base + (p)->buf_size + 1 &&                                                     \
-           "parser->cur_offset: cannot be outside of range of buffer");                                                \
+#include "log.h"
+#include "utf8.h"
+
+#define ASSERT_PARSER(p)                                                     \
+  do {                                                                       \
+    assert((p) != NULL && "parser: cannot be null");                         \
+    assert((p)->buf_size > 0 && "parser->buf_len: cannot be zero");          \
+    assert((p)->cur_offset != NULL && "parser->cur_offset: cannot be null"); \
+    assert((p)->cur_offset <= (p)->buf_base + (p)->buf_size + 1 &&           \
+           "parser->cur_offset: cannot be outside of range of buffer");      \
   } while (0)
-#define CHECK_BOUNDS_OR_FALSE(p)                                                                                       \
-  do {                                                                                                                 \
-    if ((p)->cur_offset - (p)->buf_base >= (p)->buf_size) {                                                            \
-      return false;                                                                                                    \
-    }                                                                                                                  \
+#define CHECK_BOUNDS_OR_FALSE(p)                            \
+  do {                                                      \
+    if ((p)->cur_offset - (p)->buf_base >= (p)->buf_size) { \
+      return false;                                         \
+    }                                                       \
   } while (0)
-#define CHECK_BOUNDS_OR_NULL(p)                                                                                        \
-  do {                                                                                                                 \
-    if ((p)->cur_offset - (p)->buf_base >= (p)->buf_size) {                                                            \
-      return NULL;                                                                                                     \
-    }                                                                                                                  \
+#define CHECK_BOUNDS_OR_NULL(p)                             \
+  do {                                                      \
+    if ((p)->cur_offset - (p)->buf_base >= (p)->buf_size) { \
+      return NULL;                                          \
+    }                                                       \
   } while (0)
-#define CHECK_BOUNDS_OR_RETURN(p)                                                                                      \
-  do {                                                                                                                 \
-    if ((p)->cur_offset - (p)->buf_base >= (p)->buf_size) {                                                            \
-      return;                                                                                                          \
-    }                                                                                                                  \
+#define CHECK_BOUNDS_OR_RETURN(p)                           \
+  do {                                                      \
+    if ((p)->cur_offset - (p)->buf_base >= (p)->buf_size) { \
+      return;                                               \
+    }                                                       \
   } while (0)
-#define MUST(v, p, e)                                                                                                  \
-  do {                                                                                                                 \
-    if (!(v)) {                                                                                                        \
-      if (*p->cur_offset == '\n') {                                                                                    \
-        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character <new line>, was expecting %s", (e));              \
-      } else if (*p->cur_offset == '\t') {                                                                             \
-        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character <tab>, was expecting %s", (e));                   \
-      } else if (*p->cur_offset == ' ') {                                                                              \
-        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character <space>, was expecting %s", (e));                 \
-      } else if (*p->cur_offset == '\0') {                                                                             \
-        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character <end of file>, was expecting %s", (e));           \
-      } else {                                                                                                         \
-        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character `%c`, was expecting %s", *p->cur_offset, (e));    \
-      }                                                                                                                \
-      return false;                                                                                                    \
-    }                                                                                                                  \
+#define MUST(v, p, e)                                                                                               \
+  do {                                                                                                              \
+    if (!(v)) {                                                                                                     \
+      if (*p->cur_offset == '\n') {                                                                                 \
+        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character <new line>, was expecting %s", (e));           \
+      } else if (*p->cur_offset == '\t') {                                                                          \
+        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character <tab>, was expecting %s", (e));                \
+      } else if (*p->cur_offset == ' ') {                                                                           \
+        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character <space>, was expecting %s", (e));              \
+      } else if (*p->cur_offset == '\0') {                                                                          \
+        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character <end of file>, was expecting %s", (e));        \
+      } else {                                                                                                      \
+        tau_log(TAU_LOG_LEVEL_ERROR, (p)->loc, "unexpected character `%c`, was expecting %s", *p->cur_offset, (e)); \
+      }                                                                                                             \
+      return false;                                                                                                 \
+    }                                                                                                               \
   } while (0)
 
 #define EXP_SEQ_COUNT 3
@@ -570,17 +571,17 @@ struct tau_literal *tau_literal_new() { return calloc(1, sizeof(struct tau_liter
 void tau_literal_free(struct tau_literal *literal) {
   assert(literal != NULL && "parser: cannot be null");
   switch (literal->type) {
-  case TAU_LITERAL_STR:
-    if (literal->as_str != NULL) {
-      free(literal->as_str);
-    }
-    break;
-  case TAU_LITERAL_NUM_INT:
-  case TAU_LITERAL_BOL:
-  case TAU_LITERAL_UNIT:
-  case TAU_LITERAL_NIL:
-  case TAU_LITERAL_NUM_FLT:
-    break;
+    case TAU_LITERAL_STR:
+      if (literal->as_str != NULL) {
+        free(literal->as_str);
+      }
+      break;
+    case TAU_LITERAL_NUM_INT:
+    case TAU_LITERAL_BOL:
+    case TAU_LITERAL_UNIT:
+    case TAU_LITERAL_NIL:
+    case TAU_LITERAL_NUM_FLT:
+      break;
   }
 
   free(literal);

@@ -9,6 +9,7 @@
 // clang-format on
 
 #include "utf8.h"
+
 #include "common.h"
 
 static void test_tau_enc_cp_to_bytes(void **state) {
@@ -102,12 +103,12 @@ static void test_boundary_condition(void **state) {
   // 2.3 Other boundary conditions
   // 2.3.1  U-0000D7FF = ed 9f bf
   assert_int_equal(tau_dec_bytes_to_cp("\xED\x9F\xBF", &codepoint), 3);
-  assert_int_equal(codepoint, 0xD7FF); // NOTE(cedmundo): Not really searching for non-defined unicode characters
+  assert_int_equal(codepoint, 0xD7FF);  // NOTE(cedmundo): Not really searching for non-defined unicode characters
   // assert_int_equal(codepoint, UNICODE_REPLACEMENT_CHARACTER);
 
   // 2.3.2  U-0000E000 = ee 80 80
   assert_int_equal(tau_dec_bytes_to_cp("\xEE\x80\x80", &codepoint), 3);
-  assert_int_equal(codepoint, 0xE000); // NOTE(cedmundo): Not really searching for non-defined unicode characters
+  assert_int_equal(codepoint, 0xE000);  // NOTE(cedmundo): Not really searching for non-defined unicode characters
   // assert_int_equal(codepoint, UNICODE_REPLACEMENT_CHARACTER);
 
   // 2.3.3  U-0000FFFD = ef bf bd

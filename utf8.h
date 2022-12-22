@@ -13,4 +13,4 @@
 uint8_t tau_enc_cp_to_bytes(uint32_t codepoint, char *dest);
 uint8_t tau_dec_bytes_to_cp(const char src[4], uint32_t *codepoint);
 
-#endif // TAU_UTF8_H
+#endif  // TAU_UTF8_H

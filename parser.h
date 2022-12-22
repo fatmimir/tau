@@ -5,9 +5,10 @@
 #ifndef TAU_PARSER_H
 #define TAU_PARSER_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
+
 #include "common.h"
 
 struct tau_parser {
@@ -30,7 +31,7 @@ struct tau_literal {
   union {
     uint64_t as_int;
     double as_flt;
-    char *as_str; // copy
+    char *as_str;  // copy
     bool as_bol;
   };
   struct tau_loc loc;
@@ -38,7 +39,7 @@ struct tau_literal {
 };
 
 struct tau_identifier {
-  char *as_str; // copy
+  char *as_str;  // copy
   struct tau_loc loc;
 };
 
@@ -63,4 +64,4 @@ void tau_literal_free(struct tau_literal *literal);
 struct tau_identifier *tau_identifier_new();
 void tau_identifier_free(struct tau_identifier *identifier);
 
-#endif // TAU_PARSER_H
+#endif  // TAU_PARSER_H

@@ -21,4 +21,4 @@ endmacro()
 
 # Testing
 enable_testing()
-setup_test(test_dummy test_dummy.c)
+setup_test(utf8_test common.h utf8.h utf8.c)

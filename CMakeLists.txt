@@ -22,3 +22,4 @@ endmacro()
 # Testing
 enable_testing()
 setup_test(utf8_test common.h utf8.h utf8.c)
+setup_test(parser_test common.h utf8.h utf8.c log.h log.c parser.h parser.c)

@@ -16,6 +16,6 @@ enum tau_log_level {
   TAU_LOG_LEVEL_ERROR,
 };
 
-void tau_log(enum tau_log_level level, const char *file, size_t row, size_t col, const char *fmt, ...);
+void tau_log(enum tau_log_level level, struct tau_loc loc, const char *fmt, ...);
 
 #endif // TAU_LOG_H

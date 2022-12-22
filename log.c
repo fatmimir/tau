@@ -7,7 +7,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-void tau_log(enum tau_log_level level,  const char *file, size_t row, size_t col, const char *fmt, ...) {
+void tau_log(enum tau_log_level level, struct tau_loc loc, const char *fmt, ...) {
   FILE *target = stdout;
   if (level == TAU_LOG_LEVEL_ERROR) {
     target = stderr;
@@ -16,7 +16,7 @@ void tau_log(enum tau_log_level level,  const char *file, size_t row, size_t col
   va_list list;
   va_start(list, fmt);
 
-  fprintf(target, "%s:%ld:%ld ", file, row, col);
+  fprintf(target, "%s:%ld:%ld ", loc.buf_name, loc.row, loc.col);
   switch(level) {
   case TAU_LOG_LEVEL_TRACE:
     fprintf(target, "trace: ");

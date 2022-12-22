@@ -1,56 +1,52 @@
 (* terminals *)
 eof = ? end of file ?;
-letter = ? any ascii letter ?;
+letter = ? any alpha letter ?;
 space = ? any white space character ?;
 unicode = ? any unicode character ?;
 new_line = ? any new line character ?;
 
-(* helpers *)
-identifier = letter, { letter | dec_digit | "_" | "$" };
-spaces = { space };
-maybe_spaces = [ spaces ];
-eol = ";";
+bin_digit = ? 0 .. 1 ?;
+oct_digit = ? 0 .. 7 ?;
+dec_digit = ? 0 .. 9 ?;
+hex_digit = ? 0 .. 9 | A .. F | a .. f;
+eol = ";" | 0x037E; // warning: greek question mark
 
-(* Comments *)
+(* spaces *)
+spaces = space, { space };
+maybe_spaces = { space };
+
+(* comments *)
 line_comment = maybe_spaces, "//", { unicode - new_line }, maybe_spaces;
 block_comment = maybe_spaces, "/*", { unicode }, "*/", maybe_spaces;
 comment = line | block_comment;
 
 (* literals *)
-bin_digit 	= "0" | "1";
-oct_digit 	= bin_digit | "2" | "3" | "4" | "5" | "6" | "7";
-dec_digit 	= oct_digit | "8" | "9";
-hex_digit 	= dec_digit | "A" | "B" | "C" | "D" | "E" | "F" | "a" | "b" | "c" | "d" | "e" | "f";
-
-flt_literal = ["+" | "-"], flt_digits;
-flt_digits	= dec_digits, [ "." dec_digits ], [ exp_suffix ];
-exp_suffix 	= [ "e" | "e+" | "e-"], dec_digits;
-sig_literal = [ "-" | "+" ], uns_literal;
-uns_literal	= dec_digits | "0b", bin_digits | "0o", oct_digits | "0x", hex_digits;
-bin_digits	= { bin_digit };
-oct_digits	= { oct_digit };
-dec_digits	= { dec_digit };
-hex_digits	= { hex_digit };
+num_literal	= "0b", bin_digit, { bin_digit }
+            | "0o", oct_digit, { oct_digit }
+            | "0x", hex_digit, { hex_digit }
+            | { dec_digit } [".", { dec_digit }, [ ("e" | "e+" | "e-"), { dec_digit } ]];
 esc_seq : "\'" | "\"" | "\\" | "\n" | "\r" | "\t" | "\b" | "\f" | "\v" | "\0"
 		| "\x", hex_digit, hex_digit
 		| "\u", hex_digit, hex_digit, hex_digit, hex_digit
 		| "\U", hex_digit, hex_digit, hex_digit, hex_digit, hex_digit, hex_digit, hex_digit, hex_digit;
-str_literal = """, { unicode | esc_seq }, """;
-bol_literal = "true" | "false"
-val_literal = "nil" | "unit"
-literal 	= sig_literal | flt_literal | str_literal | bol_literal | val_literal;
+str_literal = """, { (unicode - new_line) | esc_seq }, """;
+bol_literal = "true" | "false";
+nil_literal = "nil";
+unit_literal = "unit";
+literal 	= num_literal | str_literal | bol_literal | nil_literal | unit_literal;
 
 (* lookups *)
+identifier = letter, { letter | dec_digit | "_" | "$" };
 static_lookup = identifier, { "::", identifier };
 member_lookup = static_lookup, { ".", identifier };
 
 (* arguments *)
-formal_args = "(", [{ identifier type_bind "," }], ")"
-passing_args = "(", [{ data_expr "," }], ")"
+formal_args = "(", { maybe_spaces, identifier, type_bind, maybe_spaces "," }, ")"
+passing_args = "(", { maybe_spaces, data_expr, maybe_spaces, "," }, ")"
 
 (* expressions and bindings *)
 type_expr = { "&" }, static_lookup;
-data_expr = "(" data_expr ")" | prec10_expr
+data_expr = "(" data_expr, maybe_spaces ")" | prec10_expr
 prec10_expr = maybe_spaces, prec20_expr, { maybe_spaces, "||", prec20_expr };
 prec20_expr = maybe_spaces, prec30_expr, { maybe_spaces, "&&", prec30_expr };
 prec30_expr = maybe_spaces, prec40_expr, { maybe_spaces, "==", prec40_expr | maybe_spaces, "!=", prec40_expr };
@@ -69,7 +65,7 @@ prec90_expr = maybe_spaces, prec100_expr, {
     | maybe_spaces, "/", prec100_expr
     | maybe_spaces, "%", prec100_expr
 };
-prec100_expr = [{ "+" | "-" | "&" | "!" | "~" }], call_expr;
+prec100_expr = { "+" | "-" | "&" | "!" | "~" }, call_expr;
 call_expr = primary_expr, { passing_args };
 primary_expr = member_lookup | literal;
 

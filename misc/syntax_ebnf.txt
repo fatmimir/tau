@@ -1,0 +1,106 @@
+(* terminals *)
+eof = ? end of file ?;
+letter = ? any ascii letter ?;
+space = ? any white space character ?;
+unicode = ? any unicode character ?;
+new_line = ? any new line character ?;
+
+(* helpers *)
+identifier = letter, { letter | dec_digit | "_" | "$" };
+spaces = { space };
+maybe_spaces = [ spaces ];
+eol = ";";
+
+(* Comments *)
+line_comment = maybe_spaces, "//", { unicode - new_line }, maybe_spaces;
+block_comment = maybe_spaces, "/*", { unicode }, "*/", maybe_spaces;
+comment = line | block_comment;
+
+(* literals *)
+bin_digit 	= "0" | "1";
+oct_digit 	= bin_digit | "2" | "3" | "4" | "5" | "6" | "7";
+dec_digit 	= oct_digit | "8" | "9";
+hex_digit 	= dec_digit | "A" | "B" | "C" | "D" | "E" | "F" | "a" | "b" | "c" | "d" | "e" | "f";
+
+flt_literal = ["+" | "-"], flt_digits;
+flt_digits	= dec_digits, [ "." dec_digits ], [ exp_suffix ];
+exp_suffix 	= [ "e" | "e+" | "e-"], dec_digits;
+sig_literal = [ "-" | "+" ], uns_literal;
+uns_literal	= dec_digits | "0b", bin_digits | "0o", oct_digits | "0x", hex_digits;
+bin_digits	= { bin_digit };
+oct_digits	= { oct_digit };
+dec_digits	= { dec_digit };
+hex_digits	= { hex_digit };
+esc_seq : "\'" | "\"" | "\\" | "\n" | "\r" | "\t" | "\b" | "\f" | "\v" | "\0"
+		| "\x", hex_digit, hex_digit
+		| "\u", hex_digit, hex_digit, hex_digit, hex_digit
+		| "\U", hex_digit, hex_digit, hex_digit, hex_digit, hex_digit, hex_digit, hex_digit, hex_digit;
+str_literal = """, { unicode | esc_seq }, """;
+bol_literal = "true" | "false"
+val_literal = "nil" | "unit"
+literal 	= sig_literal | flt_literal | str_literal | bol_literal | val_literal;
+
+(* lookups *)
+static_lookup = identifier, { "::", identifier };
+member_lookup = static_lookup, { ".", identifier };
+
+(* arguments *)
+formal_args = "(", [{ identifier type_bind "," }], ")"
+passing_args = "(", [{ data_expr "," }], ")"
+
+(* expressions and bindings *)
+type_expr = { "&" }, static_lookup;
+data_expr = "(" data_expr ")" | prec10_expr
+prec10_expr = maybe_spaces, prec20_expr, { maybe_spaces, "||", prec20_expr };
+prec20_expr = maybe_spaces, prec30_expr, { maybe_spaces, "&&", prec30_expr };
+prec30_expr = maybe_spaces, prec40_expr, { maybe_spaces, "==", prec40_expr | maybe_spaces, "!=", prec40_expr };
+prec40_expr = maybe_spaces, prec50_expr, {
+    maybe_spaces, ">", prec50_expr
+    | maybe_spaces, "<", prec50_expr
+    | maybe_spaces, ">=", prec50_expr
+    | maybe_spaces, "<=", prec50_expr
+};
+prec50_expr = maybe_spaces, prec60_expr, { maybe_spaces, "|", prec60_expr | maybe_spaces, "^", prec60_expr };
+prec60_expr = maybe_spaces, prec70_expr, { maybe_spaces, "&", prec70_expr };
+prec70_expr = maybe_spaces, prec80_expr, { maybe_spaces, ">>", prec80_expr | maybe_spaces, "<<", prec80_expr };
+prec80_expr = maybe_spaces, prec80_expr, { maybe_spaces, "+", prec90_expr | maybe_spaces, "-", prec90_expr  };
+prec90_expr = maybe_spaces, prec100_expr, {
+    maybe_spaces, "*", prec100_expr
+    | maybe_spaces, "/", prec100_expr
+    | maybe_spaces, "%", prec100_expr
+};
+prec100_expr = [{ "+" | "-" | "&" | "!" | "~" }], call_expr;
+call_expr = primary_expr, { passing_args };
+primary_expr = member_lookup | literal;
+
+type_bind = maybe_spaces, ":", maybe_spaces, type_expr;
+data_bind = maybe_spaces, "=", maybe_spaces, data_expr;
+
+(* statements *)
+return_stmt = maybe_spaces, "return", spaces, data_expr
+continue_stmt = maybe_spaces, "continue"
+break_stmt = maybe_spaces, "break"
+assign_stmt = maybe_spaces, member_lookup, ("=" | "+=" | "-=" | "*=" | "/=" | ">>=" | "<<=" | "&=" | "|="), data_expr
+call_stmt = (member_lookup | '(' data_expr ')'), { passing_args };
+line_stmt = (break_stmt | continue_stmt | return_stmt | call_stmt) maybe_spaces eol
+
+branch_cond_stmt = "if", data_expr, block, { "elif", data_expr, block }, [ "else" block ]
+branch_loop_stmt = "loop" block
+block_stmt = branch_cond_stmt | branch_loop_stmt
+
+(* code blocks and declaration suffixes *)
+block = maybe_spaces "{", { let_decl | proc_decl | line_stmt | block_stmt | comment }, "}" maybe_spaces;
+prototype_suffix = maybe_spaces, "prototype", eol
+data_bind_suffix = maybe_spaces, data_bind, maybe_spaces, eol
+
+(* declarations *)
+module_decl = "module", spaces, static_lookup, maybe_spaces, eol;
+let_decl = "let", spaces, identifier, type_bind, maybe_spaces, (data_bind_suffix | prototype_suffix);
+proc_decl = "proc", spaces, identifier, maybe_spaces, formal_args,
+				type_bind, maybe_spaces, (block | data_bind_suffix | prototype_suffix);
+extern_decl = "extern", spaces, ( let_decl | proc_decl );
+
+(* file level *)
+decls = { (extern_decl | let_decl | proc_decl), maybe_spaces, eol };
+comments = { comment };
+compilation_unit = module_decl, (decls | comments) eof;

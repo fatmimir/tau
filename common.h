@@ -13,6 +13,8 @@ struct tau_loc {
   size_t col;
 };
 
+typedef void(free_func_t)(void *);
+
 #define UNUSED(x) ((void)x)
 #define UNUSED_TYPE(x) ((void *)(x *)0)
 

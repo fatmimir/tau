@@ -44,7 +44,7 @@ type_bind = ":", type_expr;
 data_bind = "=", data_expr;
 
 (* statements *)
-return_stmt = "return", spaces, data_expr;
+return_stmt = "return", data_expr;
 continue_stmt = "continue";
 break_stmt = "break";
 assign_stmt = data_lookup_expr, ("=" | "+=" | "-=" | "*=" | "/=" | ">>=" | "<<=" | "&=" | "|="), data_expr;
@@ -61,11 +61,11 @@ prototype_suffix = "prototype", eol;
 data_bind_suffix = data_bind, eol;
 
 (* declarations *)
-module_decl = "module", spaces, static_lookup, eol;
-let_decl = "let", spaces, identifier, type_bind, (data_bind_suffix | prototype_suffix);
-proc_decl = "proc", spaces, identifier, formal_args,
+module_decl = "module", static_lookup, eol;
+let_decl = "let", identifier, type_bind, (data_bind_suffix | prototype_suffix);
+proc_decl = "proc", identifier, formal_args,
 				type_bind, (block | data_bind_suffix | prototype_suffix);
-extern_decl = "extern", spaces, ( let_decl | proc_decl );
+extern_decl = "extern", ( let_decl | proc_decl );
 
 (* file level *)
 decls = { (extern_decl | let_decl | proc_decl), eol };

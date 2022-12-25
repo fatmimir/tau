@@ -18,6 +18,7 @@
 #define ESCAPE_SEQUENCE_PREFIX_LEN 2
 #define EXHAUSTIVE_PUNCT_TABLE_COUNT 40
 #define EXHAUSTIVE_KEYWORD_TABLE_COUNT 17
+#define EXHAUSTIVE_TOKEN_NAME_TABLE_COUNT 12
 
 // TABLES
 const char *punct_table[] = {
@@ -43,6 +44,23 @@ const char *keyword_table[] = {
     [TAU_KEYWORD_RETURN] = "return",
 };
 static_assert(TAU_KEYWORD_COUNT == EXHAUSTIVE_KEYWORD_TABLE_COUNT && "outdated exhaustive keyword table");
+
+const char *token_name_table[] = {
+    [TAU_TOKEN_TYPE_NONE] = "(none)",
+    [TAU_TOKEN_TYPE_EOF] = "<EOF>",
+    [TAU_TOKEN_TYPE_EOL] = "<EOL>",
+    [TAU_TOKEN_TYPE_INT_LIT] = "<int literal>",
+    [TAU_TOKEN_TYPE_FLT_LIT] = "<float literal>",
+    [TAU_TOKEN_TYPE_STR_LIT] = "<string literal>",
+    [TAU_TOKEN_TYPE_BOL_LIT] = "<boolean literal>",
+    [TAU_TOKEN_TYPE_NIL_LIT] = "<nil literal>",
+    [TAU_TOKEN_TYPE_UNI_LIT] = "<unit literal>",
+    [TAU_TOKEN_TYPE_PUNCT] = "<punct symbol>",
+    [TAU_TOKEN_TYPE_KEYWORD] = "<keyword>",
+    [TAU_TOKEN_TYPE_IDENTIFIER] = "<identifier>",
+    [TAU_TOKEN_TYPE_COUNT] = "(invalid)",
+};
+static_assert(TAU_TOKEN_TYPE_COUNT == EXHAUSTIVE_TOKEN_NAME_TABLE_COUNT && "outdated exhaustive token name table");
 
 bool is_space(const uint32_t uc) { return uc == UC_TAB || uc == UC_SPACE; }
 
@@ -364,6 +382,23 @@ void apply_bracket_balance(struct tau_token *cur) {
   } else if (cur->punct == TAU_PUNCT_RCBR) {
     cur->cbr_balance--;
   }
+}
+
+const char *tau_token_get_name(enum tau_token_type type) { return token_name_table[type]; }
+
+const char *tau_token_get_punct_name(enum tau_punct punct) {
+  if (punct > TAU_PUNCT_NONE && punct < TAU_PUNCT_COUNT) {
+    return punct_table[punct];
+  }
+
+  return "(invalid)";
+}
+const char *tau_token_get_keyword_name(enum tau_keyword keyword) {
+  if (keyword > TAU_KEYWORD_NONE && keyword < TAU_KEYWORD_COUNT) {
+    return keyword_table[keyword];
+  }
+
+  return "(invalid)";
 }
 
 struct tau_token tau_token_start(const char *name, const char *buf_data, size_t buf_size) {

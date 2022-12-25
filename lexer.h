@@ -111,6 +111,10 @@ struct tau_token {
   enum tau_num_base num_base;
 };
 
+const char *tau_token_get_name(enum tau_token_type type);
+const char *tau_token_get_punct_name(enum tau_punct punct);
+const char *tau_token_get_keyword_name(enum tau_keyword keyword);
+
 struct tau_token tau_token_start(const char *name, const char *buf_data, size_t buf_size);
 struct tau_token tau_token_next(struct tau_token prev);
 

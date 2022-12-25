@@ -55,7 +55,7 @@ static void test_push_pop_within_limits(void **state) {
   tau_ptr_stack_free(stack);
 }
 
-static void test_push_pop_outside_limits(void **state) {
+static void test_push_outside_limits(void **state) {
   UNUSED(state);
   struct tau_ptr_stack *stack = tau_ptr_stack_new();
   assert_int_equal(stack->cap, TAU_PTR_STACK_CAP_INC);
@@ -64,6 +64,26 @@ static void test_push_pop_outside_limits(void **state) {
   for (int32_t i = 0; i <= TAU_PTR_STACK_CAP_INC + 5; i++) {
     size_t value = 0xF0 + i;
     assert_true(tau_ptr_stack_push(stack, (void *)value, NULL));
+  }
+
+  assert_int_equal(stack->cap, TAU_PTR_STACK_CAP_INC * 2);
+  tau_ptr_stack_free(stack);
+}
+
+static void test_push_get_within_limits(void **state) {
+  UNUSED(state);
+  struct tau_ptr_stack *stack = tau_ptr_stack_new();
+  assert_int_equal(stack->cap, TAU_PTR_STACK_CAP_INC);
+  assert_true(tau_ptr_stack_is_empty(stack));
+
+  for (int32_t i = 0; i <= TAU_PTR_STACK_CAP_INC + 5; i++) {
+    size_t value = 0xF0 + i;
+    assert_true(tau_ptr_stack_push(stack, (void *)value, NULL));
+  }
+
+  for (int32_t i = 0; i <= TAU_PTR_STACK_CAP_INC + 5; i++) {
+    size_t expected_value = 0xF0 + i;
+    assert_int_equal(expected_value, tau_ptr_stack_get(stack, i));
   }
 
   assert_int_equal(stack->cap, TAU_PTR_STACK_CAP_INC * 2);
@@ -85,9 +105,8 @@ int main() {
   UNUSED_TYPE(va_list);
 
   const struct CMUnitTest tests[] = {
-      cmocka_unit_test(test_memory_safety),
-      cmocka_unit_test(test_push_pop_within_limits),
-      cmocka_unit_test(test_push_pop_outside_limits),
+      cmocka_unit_test(test_memory_safety),           cmocka_unit_test(test_push_pop_within_limits),
+      cmocka_unit_test(test_push_outside_limits),     cmocka_unit_test(test_push_get_within_limits),
       cmocka_unit_test(test_item_free_on_stack_free),
   };
 

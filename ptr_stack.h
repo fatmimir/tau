@@ -22,6 +22,7 @@ void tau_ptr_stack_free(void *maybe_stack);
 bool tau_ptr_stack_is_empty(struct tau_ptr_stack *stack);
 bool tau_ptr_stack_push(struct tau_ptr_stack *stack, void *item, free_func_t *free_f);
 void *tau_ptr_stack_pop(struct tau_ptr_stack *stack);
+void *tau_ptr_stack_get(struct tau_ptr_stack *stack, int32_t offset);
 
 #define TAU_PTR_STACK_CAP_INC 10
 #endif  // TAU_PTR_STACK_H

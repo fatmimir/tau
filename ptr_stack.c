@@ -91,7 +91,7 @@ void *tau_ptr_stack_pop(struct tau_ptr_stack *stack) {
   return NULL;
 }
 
-void *tau_ptr_stack_get(struct tau_ptr_stack *stack, int32_t offset) {
+void *tau_ptr_stack_get(struct tau_ptr_stack *stack, int64_t offset) {
   ASSERT_STACK_STATE(stack);
   if (stack->head >= offset && offset > -1) {
     void *data = stack->ptr_bottom[offset];

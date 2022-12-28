@@ -5,68 +5,60 @@ literal = ? any literal emitted by lexer (string, numeric, boolean, nil and unit
 (* notice: lexer will remove comments automatically, this may change in future to allow semantic comments *)
 (* notice: lexer will automatically detect when a space and a new line are required, so we ignore them on the parser *)
 
-(* static lookups *)
-static_lookup = identifier, { "::", identifier };
-
-(* expressions and bindings *)
-type_expr = { "&" }, static_lookup;
-
-data_expr = "(" data_expr ")" | data_prec10_expr
-data_prec10_expr = data_prec20_expr, { "||", data_prec20_expr };
-data_prec20_expr = data_prec30_expr, { "&&", data_prec30_expr };
-data_prec30_expr = data_prec40_expr, { "==", data_prec40_expr | "!=", data_prec40_expr };
-data_prec40_expr = data_prec50_expr, {
-    ">", data_prec50_expr
-    | "<", data_prec50_expr
-    | ">=", data_prec50_expr
-    | "<=", data_prec50_expr
-};
-data_prec50_expr = data_prec60_expr, { "|", data_prec60_expr | "^", data_prec60_expr };
-data_prec60_expr = data_prec70_expr, { "&", data_prec70_expr };
-data_prec70_expr = data_prec80_expr, { ">>", data_prec80_expr | "<<", data_prec80_expr };
-data_prec80_expr = data_prec80_expr, { "+", data_prec90_expr | "-", data_prec90_expr  };
-data_prec90_expr = data_prec100_expr, {
-    "*", data_prec100_expr
-    | "/", data_prec100_expr
-    | "%", data_prec100_expr
-};
-data_prec100_expr = { "+" | "-" | "&" | "!" | "~" }, data_primary_expr;
-data_primary_expr = data_lookup_expr, { passing_args };
-data_lookup_expr = data_atom_expr, { "::" data_primary_expr | "." data_primary_expr };
-data_atom_expr = identifier | literal;
-
-(* arguments *)
-formal_args = "(", { identifier, type_bind "," }, ")";
-passing_args = "(", { data_expr, "," }, ")";
-
-(* bindings *)
-type_bind = ":", type_expr;
-data_bind = "=", data_expr;
-
-(* statements *)
-return_stmt = "return", data_expr;
-continue_stmt = "continue";
-break_stmt = "break";
-assign_stmt = data_lookup_expr, ("=" | "+=" | "-=" | "*=" | "/=" | ">>=" | "<<=" | "&=" | "|="), data_expr;
-call_stmt = (data_lookup_expr | '(' data_expr ')'), { passing_args };
-line_stmt = (break_stmt | continue_stmt | return_stmt | call_stmt) eol;
-
-branch_cond_stmt = "if", data_expr, block, { "elif", data_expr, block }, [ "else" block ];
-branch_loop_stmt = "loop" block;
-block_stmt = branch_cond_stmt | branch_loop_stmt;
-
-(* code blocks and declaration suffixes *)
-block = "{", { let_decl | proc_decl | line_stmt | block_stmt }, "}";
-prototype_suffix = "prototype", eol;
-data_bind_suffix = data_bind, eol;
+(* file level *)
+compilation_unit = module_decl, decls eof;
+decls = { (extern_decl | let_decl | proc_decl), eol };
 
 (* declarations *)
-module_decl = "module", static_lookup, eol;
-let_decl = "let", identifier, type_bind, (data_bind_suffix | prototype_suffix);
-proc_decl = "proc", identifier, formal_args,
-				type_bind, (block | data_bind_suffix | prototype_suffix);
+module_decl = "module", type_lookup_expr, eol;
+let_decl = "let", identifier, type_bind, (data_bind | "prototype");
+proc_decl = "proc", identifier, formal_args, type_bind, (block | data_bind | "prototype");
 extern_decl = "extern", ( let_decl | proc_decl );
 
-(* file level *)
-decls = { (extern_decl | let_decl | proc_decl), eol };
-compilation_unit = module_decl, decls eof;
+(* bindings *)
+type_bind = ":", expr;
+data_bind = "=", expr;
+
+(* arguments *)
+formal_args = "(", [ (identifier, type_bind) | { identifier, type_bind "," } ], ")";
+passing_args = "(", [ expr | { expr, "," } ], ")";
+
+(* statements *)
+return_stmt = "return", expr;
+continue_stmt = "continue";
+break_stmt = "break";
+assign_stmt = data_lookup_expr, ("=" | "+=" | "-=" | "*=" | "/=" | ">>=" | "<<=" | "&=" | "|="), expr;
+call_stmt = call_expr;
+branch_cond_stmt = "if", expr, block, { "elif", expr, block }, [ "else" block ];
+branch_loop_stmt = "loop" block;
+statement = break_stmt | continue_stmt | return_stmt | call_stmt | assign_stmt | branch_cond_stmt | branch_loop_stmt;
+
+(* code block *)
+block = "{", [eol], { statement eol }, "}";
+
+(* expressions *)
+expr = log_or_expr
+log_or_expr = log_and_expr, { "||", log_and_expr };
+log_and_expr = rel_expr, { "&&", rel_expr };
+rel_expr = cmp_expr, { "==", cmp_expr | "!=", cmp_expr };
+cmp_expr = bit_or_expr, {
+    ">", bit_or_expr
+    | "<", bit_or_expr
+    | ">=", bit_or_expr
+    | "<=", bit_or_expr
+};
+bit_or_expr = bit_and_expr, { "|", bit_and_expr | "^", bit_and_expr };
+bit_and_expr = bit_shift_expr, { "&", bit_shift_expr };
+bit_shift_expr = sum_expr, { ">>", sum_expr | "<<", sum_expr };
+sum_expr = mul_expr, { "+", mul_expr | "-", mul_expr  };
+mul_expr = unary_expr, {
+    "*", unary_expr
+    | "/", unary_expr
+    | "%", unary_expr
+};
+unary_expr = { "+" | "-" | "&" | "!" | "~" }, tag_expr;
+tag_expr = call_expr, { "'", call_expr };
+call_expr = data_lookup_expr, { passing_args };
+data_lookup_expr = type_lookup_expr, { ".", type_lookup_expr };
+type_lookup_expr = atom_expr { "::", atom_expr };
+atom_expr = "(" expr ")" | identifier | literal;

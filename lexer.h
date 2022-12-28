@@ -66,6 +66,9 @@ enum tau_punct {
   TAU_PUNCT_PCT,        // %
   TAU_PUNCT_PIPE,       // |
   TAU_PUNCT_AMP,        // &
+  TAU_PUNCT_CIRC,       // ^
+  TAU_PUNCT_TILDE,      // ~
+  TAU_PUNCT_APOS,       // '
   TAU_PUNCT_COUNT,
 };
 

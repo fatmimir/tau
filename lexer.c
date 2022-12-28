@@ -16,7 +16,7 @@
 #define DIGITS_BASE_PREFIX_LEN 2
 #define EXPONENT_WITH_SIGN_PREFIX_LEN 2
 #define ESCAPE_SEQUENCE_PREFIX_LEN 2
-#define EXHAUSTIVE_PUNCT_TABLE_COUNT 40
+#define EXHAUSTIVE_PUNCT_TABLE_COUNT 43
 #define EXHAUSTIVE_KEYWORD_TABLE_COUNT 17
 #define EXHAUSTIVE_TOKEN_NAME_TABLE_COUNT 12
 
@@ -31,7 +31,8 @@ const char *punct_table[] = {
     [TAU_PUNCT_RCBR] = "}",      [TAU_PUNCT_COLON] = ":",      [TAU_PUNCT_DOT] = ".",      [TAU_PUNCT_COMMA] = ",",
     [TAU_PUNCT_EQ] = "=",        [TAU_PUNCT_BANG] = "!",       [TAU_PUNCT_LT] = "<",       [TAU_PUNCT_GT] = ">",
     [TAU_PUNCT_PLUS] = "+",      [TAU_PUNCT_HYPHEN] = "-",     [TAU_PUNCT_AST] = "*",      [TAU_PUNCT_SLASH] = "/",
-    [TAU_PUNCT_PCT] = "%",       [TAU_PUNCT_PIPE] = "|",       [TAU_PUNCT_AMP] = "&",
+    [TAU_PUNCT_PCT] = "%",       [TAU_PUNCT_PIPE] = "|",       [TAU_PUNCT_AMP] = "&",      [TAU_PUNCT_CIRC] = "^",
+    [TAU_PUNCT_TILDE] = "~",     [TAU_PUNCT_APOS] = "'",
 };
 static_assert(TAU_PUNCT_COUNT == EXHAUSTIVE_PUNCT_TABLE_COUNT && "outdated exhaustive punct table");
 

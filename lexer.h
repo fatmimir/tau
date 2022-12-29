@@ -46,6 +46,7 @@ enum tau_punct {
   TAU_PUNCT_PCT_EQ,     // %=
   TAU_PUNCT_AMP_EQ,     // &=
   TAU_PUNCT_PIPE_EQ,    // |=
+  TAU_PUNCT_CIRC_EQ,    // ^=
   TAU_PUNCT_LPAR,       // (
   TAU_PUNCT_RPAR,       // )
   TAU_PUNCT_LSBR,       // [

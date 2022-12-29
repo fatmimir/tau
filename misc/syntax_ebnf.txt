@@ -7,55 +7,47 @@ literal = ? any literal emitted by lexer (string, numeric, boolean, nil and unit
 
 (* file level *)
 compilation_unit = module_decl, decls eof;
-decls = { (extern_decl | let_decl | proc_decl), eol };
+decls = { decl, eol };
 
 (* declarations *)
 module_decl = "module", type_lookup_expr, eol;
 let_decl = "let", identifier, type_bind, (data_bind | "prototype");
 proc_decl = "proc", identifier, formal_args, type_bind, (block | data_bind | "prototype");
 extern_decl = "extern", ( let_decl | proc_decl );
+decl = let_decl | proc_decl | extern_decl;
 
 (* bindings *)
 type_bind = ":", expr;
 data_bind = "=", expr;
 
 (* arguments *)
-formal_args = "(", [ (identifier, type_bind) | { identifier, type_bind "," } ], ")";
+formal_args = "(", [ formal_arg | { formal_arg, "," } ], ")";
+formal_arg = identifier, type_bind;
 passing_args = "(", [ expr | { expr, "," } ], ")";
+
+(* code block *)
+block = "{", [eol], { statement eol }, "}";
 
 (* statements *)
 return_stmt = "return", expr;
 continue_stmt = "continue";
 break_stmt = "break";
-assign_stmt = data_lookup_expr, ("=" | "+=" | "-=" | "*=" | "/=" | ">>=" | "<<=" | "&=" | "|="), expr;
-call_stmt = call_expr;
-branch_cond_stmt = "if", expr, block, { "elif", expr, block }, [ "else" block ];
-branch_loop_stmt = "loop" block;
-statement = break_stmt | continue_stmt | return_stmt | call_stmt | assign_stmt | branch_cond_stmt | branch_loop_stmt;
-
-(* code block *)
-block = "{", [eol], { statement eol }, "}";
+assign_or_call_stmt = (data_lookup_expr, ("=" | "+=" | "-=" | "*=" | "/=" | ">>=" | "<<=" | "&=" | "|=" | "^="), expr) | call_expr;
+if_stmt = "if", expr, block, { "elif", expr, block }, [ "else" block ];
+loop_stmt = "loop" block;
+statement = break_stmt | continue_stmt | return_stmt | call_stmt | assign_stmt | if_stmt | loop_stmt;
 
 (* expressions *)
-expr = log_or_expr
+expr = log_or_expr;
 log_or_expr = log_and_expr, { "||", log_and_expr };
 log_and_expr = rel_expr, { "&&", rel_expr };
 rel_expr = cmp_expr, { "==", cmp_expr | "!=", cmp_expr };
-cmp_expr = bit_or_expr, {
-    ">", bit_or_expr
-    | "<", bit_or_expr
-    | ">=", bit_or_expr
-    | "<=", bit_or_expr
-};
+cmp_expr = bit_or_expr, { ">", bit_or_expr | "<", bit_or_expr | ">=", bit_or_expr | "<=", bit_or_expr};
 bit_or_expr = bit_and_expr, { "|", bit_and_expr | "^", bit_and_expr };
 bit_and_expr = bit_shift_expr, { "&", bit_shift_expr };
 bit_shift_expr = sum_expr, { ">>", sum_expr | "<<", sum_expr };
 sum_expr = mul_expr, { "+", mul_expr | "-", mul_expr  };
-mul_expr = unary_expr, {
-    "*", unary_expr
-    | "/", unary_expr
-    | "%", unary_expr
-};
+mul_expr = unary_expr, { "*", unary_expr | "/", unary_expr | "%", unary_expr};
 unary_expr = { "+" | "-" | "&" | "!" | "~" }, tag_expr;
 tag_expr = call_expr, { "'", call_expr };
 call_expr = data_lookup_expr, { passing_args };

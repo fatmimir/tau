@@ -9,6 +9,7 @@
 // clang-format on
 
 #include "common.h"
+#include "parser_internals.h"
 
 static void test_dummy(void **state) {
   UNUSED(state);

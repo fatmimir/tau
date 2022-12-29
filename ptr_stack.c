@@ -30,7 +30,7 @@ void tau_ptr_stack_free(void *maybe_stack) {
   struct tau_ptr_stack *stack = (struct tau_ptr_stack *)maybe_stack;
 
   if (stack->ptr_bottom != NULL && stack->free_f_bottom != NULL) {
-    for (int32_t i = stack->head; i >= 0; i--) {
+    for (int64_t i = stack->head; i >= 0; i--) {
       void *item = stack->ptr_bottom[i];
       free_func_t *item_free_f = stack->free_f_bottom[i];
       if (item_free_f != NULL) {

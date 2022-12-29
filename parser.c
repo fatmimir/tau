@@ -350,7 +350,7 @@ struct tau_anode *parse_passing_args(struct tau_token *ahead) {
 
       struct tau_anode *arg = parse_expr(ahead);
       if (arg != NULL) {
-        tau_ptr_stack_push(arg->stack, arg, tau_ptr_stack_free);
+        tau_ptr_stack_push(passing_args->stack, arg, tau_ptr_stack_free);
         if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COMMA, TAU_KEYWORD_NONE)) {
           continue;
         }
@@ -463,8 +463,7 @@ struct tau_anode *parse_assign_or_call_stmt(struct tau_token *ahead) {
     if (node->type == TAU_ANODE_CALL_EXPR) {
       node->type = TAU_ANODE_CALL_STMT;
       return node;
-    } else if (node->type == TAU_ANODE_DATA_LOOKUP_EXPR || node->type == TAU_ANODE_TYPE_LOOKUP_EXPR ||
-               node->type == TAU_ANODE_ATOM_EXPR) {
+    } else if (node->type == TAU_ANODE_DATA_LOOKUP_EXPR || node->type == TAU_ANODE_TYPE_LOOKUP_EXPR) {
       stmt_token = *ahead;
       if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_EQ, TAU_KEYWORD_NONE)) {
         expr = parse_expr(ahead);
@@ -508,7 +507,7 @@ struct tau_anode *parse_assign_or_call_stmt(struct tau_token *ahead) {
         return new_anode_binary(TAU_ANODE_ASSIGN_BIT_XOR_STMT, stmt_token, node, expr);
       } else {
         tau_log(TAU_LOG_LEVEL_ERROR, ahead->loc,
-                "unexpected `%*.s`, was expecting <call statement> or <assign statement>", ahead->len, ahead->buf);
+                "unexpected `%.*s`, was expecting <call statement> or <assign statement>", ahead->len, ahead->buf);
         goto handle_fail;
       }
     }
@@ -1057,6 +1056,10 @@ struct tau_anode *parse_call_expr(struct tau_token *ahead) {
     if (arg != NULL) {
       node = new_anode_binary(TAU_ANODE_CALL_EXPR, call_token, node, arg);
       continue;
+    } else if (arg == NULL && match(&call_token, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_LPAR, TAU_KEYWORD_NONE)) {
+      // a passing args is present but malformed
+      tau_anode_free(node);
+      return NULL;
     }
 
     break;
@@ -1133,6 +1136,7 @@ struct tau_anode *parse_atom_expr(struct tau_token *ahead) {
 
   if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_LPAR, TAU_KEYWORD_NONE)) {
     node = parse_expr(ahead);
+    MUST_OR_FAIL(node, ahead, "<expression>");
     MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RPAR, TAU_KEYWORD_NONE), ahead,
                  "<closing `)`>");
     return node;
@@ -1174,8 +1178,84 @@ struct tau_anode *tau_parse(const char *buf_name, const char *buf_data, size_t b
   return compilation_unit;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 void tau_anode_free(void *maybe_anode) {
   struct tau_anode *anode = (struct tau_anode *)maybe_anode;
-  // TODO(fatmimir): properly release memory hold by this node
+  switch (anode->type) {
+    case TAU_ANODE_COMPILATION_UNIT:
+    case TAU_ANODE_MODULE_DECL:
+    case TAU_ANODE_EXTERN_DECL:
+    case TAU_ANODE_TYPE_BIND:
+    case TAU_ANODE_DATA_BIND:
+    case TAU_ANODE_FORMAL_ARG:
+    case TAU_ANODE_RETURN_STMT:
+    case TAU_ANODE_ASSIGN_SET_STMT:
+    case TAU_ANODE_ASSIGN_INC_STMT:
+    case TAU_ANODE_ASSIGN_DEC_STMT:
+    case TAU_ANODE_ASSIGN_MUL_STMT:
+    case TAU_ANODE_ASSIGN_DIV_STMT:
+    case TAU_ANODE_ASSIGN_LSH_STMT:
+    case TAU_ANODE_ASSIGN_RSH_STMT:
+    case TAU_ANODE_ASSIGN_BIT_AND_STMT:
+    case TAU_ANODE_ASSIGN_BIT_OR_STMT:
+    case TAU_ANODE_ASSIGN_BIT_XOR_STMT:
+    case TAU_ANODE_THEN_CASE:
+    case TAU_ANODE_ELIF_CASE:
+    case TAU_ANODE_ELSE_CASE:
+    case TAU_ANODE_LOG_OR_EXPR:
+    case TAU_ANODE_LOG_AND_EXPR:
+    case TAU_ANODE_REL_EQ_EXPR:
+    case TAU_ANODE_REL_NE_EXPR:
+    case TAU_ANODE_CMP_GT_EXPR:
+    case TAU_ANODE_CMP_LT_EXPR:
+    case TAU_ANODE_CMP_GE_EXPR:
+    case TAU_ANODE_CMP_LE_EXPR:
+    case TAU_ANODE_BIT_OR_EXPR:
+    case TAU_ANODE_BIT_XOR_EXPR:
+    case TAU_ANODE_BIT_AND_EXPR:
+    case TAU_ANODE_BIT_LSH_EXPR:
+    case TAU_ANODE_BIT_RSH_EXPR:
+    case TAU_ANODE_ADD_EXPR:
+    case TAU_ANODE_SUB_EXPR:
+    case TAU_ANODE_MUL_EXPR:
+    case TAU_ANODE_DIV_EXPR:
+    case TAU_ANODE_REM_EXPR:
+    case TAU_ANODE_UNARY_PLUS_EXPR:
+    case TAU_ANODE_UNARY_MINUS_EXPR:
+    case TAU_ANODE_UNARY_REF_EXPR:
+    case TAU_ANODE_UNARY_LOG_NOT_EXPR:
+    case TAU_ANODE_UNARY_BIT_NOT_EXPR:
+    case TAU_ANODE_TAG_EXPR:
+    case TAU_ANODE_DATA_LOOKUP_EXPR:
+    case TAU_ANODE_TYPE_LOOKUP_EXPR:
+    case TAU_ANODE_CALL_EXPR:
+    case TAU_ANODE_CALL_STMT:
+      if (anode->left != NULL) {
+        tau_anode_free(anode->left);
+      }
+
+      if (anode->right != NULL) {
+        tau_anode_free(anode->right);
+      }
+      break;
+    case TAU_ANODE_LOOP_BRANCH_STMT:
+    case TAU_ANODE_IF_BRANCH_STMT:
+    case TAU_ANODE_BLOCK:
+    case TAU_ANODE_PASSING_ARGS:
+    case TAU_ANODE_FORMAL_ARGS:
+    case TAU_ANODE_PROC_DECL:
+    case TAU_ANODE_LET_DECL:
+    case TAU_ANODE_DECLS:
+      tau_ptr_stack_free(anode->stack);
+      break;
+    case TAU_ANODE_LITERAL:
+    case TAU_ANODE_IDENTIFIER:
+    case TAU_ANODE_BREAK_STMT:
+    case TAU_ANODE_CONTINUE_STMT:
+      break;
+    case TAU_ANODE_NONE:
+    case TAU_ANODE_COUNT:
+      assert(false && "tau_anode_free: unreachable code");
+  }
   free(anode);
 }

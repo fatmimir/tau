@@ -24,5 +24,7 @@ enable_testing()
 setup_test(utf8_test common.h utf8.h utf8.c)
 setup_test(ptr_stack_test common.h ptr_stack.h ptr_stack.c)
 setup_test(lexer_test common.h utf8.h utf8.c uc_names.h log.h log.c lexer.h lexer.c)
-setup_test(parser_test common.h utf8.h utf8.c uc_names.h log.h log.c ptr_stack.h ptr_stack.c
-        lexer.h lexer.c parser.h parser_match.h parser_alloc.h parser_internals.h parser.c)
+setup_test(parser_expr_test common.h utf8.h utf8.c uc_names.h log.h log.c ptr_stack.h ptr_stack.c
+        lexer.h lexer.c parser.h parser_match.h parser_match.c parser_alloc.h parser_internals.h parser.c parser_test_utils.h)
+setup_test(parser_stmt_test common.h utf8.h utf8.c uc_names.h log.h log.c ptr_stack.h ptr_stack.c
+        lexer.h lexer.c parser.h parser_match.h parser_match.c parser_alloc.h parser_internals.h parser.c parser_test_utils.h)

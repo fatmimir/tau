@@ -256,7 +256,7 @@ static bool assert_node_topology(struct tau_anode *given_node, struct test_node 
       // BINARY
       struct test_node *left = tau_ptr_stack_get(expected_node->items, 1);
       struct test_node *right = tau_ptr_stack_get(expected_node->items, 2);
-      assert_int_equal(given_node->type, operator_type);
+      // assert_int_equal(given_node->type, operator_type);
       assert_non_null(given_node->left);
       assert_non_null(given_node->right);
       return assert_node_topology(given_node->left, left) && assert_node_topology(given_node->right, right);

@@ -285,7 +285,7 @@ struct tau_anode *parse_formal_args(struct tau_token *ahead) {
 
       struct tau_anode *arg = parse_formal_arg(ahead);
       if (arg != NULL) {
-        tau_ptr_stack_push(arg->stack, arg, tau_ptr_stack_free);
+        tau_ptr_stack_push(arg->stack, arg, tau_anode_free);
         if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COMMA, TAU_KEYWORD_NONE)) {
           continue;
         }
@@ -350,7 +350,7 @@ struct tau_anode *parse_passing_args(struct tau_token *ahead) {
 
       struct tau_anode *arg = parse_expr(ahead);
       if (arg != NULL) {
-        tau_ptr_stack_push(passing_args->stack, arg, tau_ptr_stack_free);
+        tau_ptr_stack_push(passing_args->stack, arg, tau_anode_free);
         if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COMMA, TAU_KEYWORD_NONE)) {
           continue;
         }
@@ -1182,13 +1182,24 @@ struct tau_anode *tau_parse(const char *buf_name, const char *buf_data, size_t b
 void tau_anode_free(void *maybe_anode) {
   struct tau_anode *anode = (struct tau_anode *)maybe_anode;
   switch (anode->type) {
-    case TAU_ANODE_COMPILATION_UNIT:
     case TAU_ANODE_MODULE_DECL:
     case TAU_ANODE_EXTERN_DECL:
+    case TAU_ANODE_UNARY_PLUS_EXPR:
+    case TAU_ANODE_UNARY_MINUS_EXPR:
+    case TAU_ANODE_UNARY_REF_EXPR:
+    case TAU_ANODE_UNARY_LOG_NOT_EXPR:
+    case TAU_ANODE_UNARY_BIT_NOT_EXPR:
+    case TAU_ANODE_LOOP_BRANCH_STMT:
+    case TAU_ANODE_ELSE_CASE:
     case TAU_ANODE_TYPE_BIND:
     case TAU_ANODE_DATA_BIND:
     case TAU_ANODE_FORMAL_ARG:
     case TAU_ANODE_RETURN_STMT:
+      if (anode->left != NULL) {
+        tau_anode_free(anode->left);
+      }
+      break;
+    case TAU_ANODE_COMPILATION_UNIT:
     case TAU_ANODE_ASSIGN_SET_STMT:
     case TAU_ANODE_ASSIGN_INC_STMT:
     case TAU_ANODE_ASSIGN_DEC_STMT:
@@ -1201,7 +1212,6 @@ void tau_anode_free(void *maybe_anode) {
     case TAU_ANODE_ASSIGN_BIT_XOR_STMT:
     case TAU_ANODE_THEN_CASE:
     case TAU_ANODE_ELIF_CASE:
-    case TAU_ANODE_ELSE_CASE:
     case TAU_ANODE_LOG_OR_EXPR:
     case TAU_ANODE_LOG_AND_EXPR:
     case TAU_ANODE_REL_EQ_EXPR:
@@ -1220,11 +1230,6 @@ void tau_anode_free(void *maybe_anode) {
     case TAU_ANODE_MUL_EXPR:
     case TAU_ANODE_DIV_EXPR:
     case TAU_ANODE_REM_EXPR:
-    case TAU_ANODE_UNARY_PLUS_EXPR:
-    case TAU_ANODE_UNARY_MINUS_EXPR:
-    case TAU_ANODE_UNARY_REF_EXPR:
-    case TAU_ANODE_UNARY_LOG_NOT_EXPR:
-    case TAU_ANODE_UNARY_BIT_NOT_EXPR:
     case TAU_ANODE_TAG_EXPR:
     case TAU_ANODE_DATA_LOOKUP_EXPR:
     case TAU_ANODE_TYPE_LOOKUP_EXPR:
@@ -1238,7 +1243,6 @@ void tau_anode_free(void *maybe_anode) {
         tau_anode_free(anode->right);
       }
       break;
-    case TAU_ANODE_LOOP_BRANCH_STMT:
     case TAU_ANODE_IF_BRANCH_STMT:
     case TAU_ANODE_BLOCK:
     case TAU_ANODE_PASSING_ARGS:
@@ -1246,7 +1250,9 @@ void tau_anode_free(void *maybe_anode) {
     case TAU_ANODE_PROC_DECL:
     case TAU_ANODE_LET_DECL:
     case TAU_ANODE_DECLS:
-      tau_ptr_stack_free(anode->stack);
+      if (anode->stack != NULL) {
+        tau_ptr_stack_free(anode->stack);
+      }
       break;
     case TAU_ANODE_LITERAL:
     case TAU_ANODE_IDENTIFIER:

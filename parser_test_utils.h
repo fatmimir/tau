@@ -33,6 +33,7 @@ static enum tau_anode_type tau_anode_type_from_name(const char *name, size_t len
       [TAU_ANODE_PASSING_ARGS] = "PASSING_ARGS",
       [TAU_ANODE_BLOCK] = "BLOCK",
       [TAU_ANODE_RETURN_STMT] = "RETURN_STMT",
+      [TAU_ANODE_RETURN_WITHOUT_EXPR_STMT] = "RETURN_WITHOUT_EXPR_STMT",
       [TAU_ANODE_CONTINUE_STMT] = "CONTINUE_STMT",
       [TAU_ANODE_BREAK_STMT] = "BREAK_STMT",
       [TAU_ANODE_ASSIGN_SET_STMT] = "ASSIGN_SET_STMT",
@@ -157,6 +158,7 @@ static int get_anode_type_arity(enum tau_anode_type type) {
     case TAU_ANODE_IDENTIFIER:
     case TAU_ANODE_BREAK_STMT:
     case TAU_ANODE_CONTINUE_STMT:
+    case TAU_ANODE_RETURN_WITHOUT_EXPR_STMT:
       return 0;
     case TAU_ANODE_NONE:
     case TAU_ANODE_COUNT:
@@ -262,10 +264,12 @@ static bool assert_node_topology(struct tau_anode *given_node, struct test_node 
       return assert_node_topology(given_node->left, left) && assert_node_topology(given_node->right, right);
     } else if (expected_arity > 2) {
       // LIST
-      assert_int_equal(given_node->stack->head, expected_node->items->head - 1);
-      for (int64_t i = 1; i < expected_node->items->head; i++) {
-        struct tau_anode *given_child = tau_ptr_stack_get(given_node->stack, i - 1);
-        struct test_node *expected_child = tau_ptr_stack_get(expected_node->items, i);
+      struct tau_ptr_stack *given_stack = given_node->stack;
+      struct tau_ptr_stack *expected_stack = expected_node->items;
+      assert_int_equal(given_stack->head, expected_stack->head - 1);
+      for (int64_t i = 0; i <= given_stack->head; i++) {
+        struct tau_anode *given_child = tau_ptr_stack_get(given_node->stack, i);
+        struct test_node *expected_child = tau_ptr_stack_get(expected_node->items, i + 1);
         if (!assert_node_topology(given_child, expected_child)) {
           return false;
         }
@@ -283,6 +287,7 @@ void assert_topology(struct tau_anode *given, const char *expected) {
   strcpy(test_name, "test: ");
   strcpy(test_name + 6, expected);
   struct test_node *test_node = parse_test_node(test_name, expected);
+  assert_non_null(given);
   assert_non_null(test_node);
   assert_true(assert_node_topology(given, test_node));
   test_node_free(test_node);

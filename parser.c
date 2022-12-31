@@ -383,7 +383,7 @@ struct tau_anode *parse_block(struct tau_token *ahead) {
     while (true) {
       statement_or_decl = parse_statement(ahead);
       if (statement_or_decl != NULL) {
-        tau_ptr_stack_push(statement_or_decl->stack, statement_or_decl, tau_ptr_stack_free);
+        tau_ptr_stack_push(block->stack, statement_or_decl, tau_anode_free);
         if (match_and_consume(ahead, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE)) {
           continue;
         }
@@ -421,6 +421,10 @@ struct tau_anode *parse_return_stmt(struct tau_token *ahead) {
   struct tau_token return_stmt_token = *ahead;
   if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_RETURN)) {
     struct tau_anode *expr = parse_expr(ahead);
+    if (expr == NULL) {
+      return new_anode(TAU_ANODE_RETURN_WITHOUT_EXPR_STMT, return_stmt_token);
+    }
+
     return new_anode_unary(TAU_ANODE_RETURN_STMT, return_stmt_token, expr);
   }
 
@@ -463,7 +467,8 @@ struct tau_anode *parse_assign_or_call_stmt(struct tau_token *ahead) {
     if (node->type == TAU_ANODE_CALL_EXPR) {
       node->type = TAU_ANODE_CALL_STMT;
       return node;
-    } else if (node->type == TAU_ANODE_DATA_LOOKUP_EXPR || node->type == TAU_ANODE_TYPE_LOOKUP_EXPR) {
+    } else if (node->type == TAU_ANODE_DATA_LOOKUP_EXPR || node->type == TAU_ANODE_TYPE_LOOKUP_EXPR ||
+               node->type == TAU_ANODE_IDENTIFIER) {
       stmt_token = *ahead;
       if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_EQ, TAU_KEYWORD_NONE)) {
         expr = parse_expr(ahead);
@@ -551,7 +556,7 @@ struct tau_anode *parse_if_stmt(struct tau_token *ahead) {
       if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_ELIF)) {
         struct tau_anode *elif_cond = parse_expr(ahead);
         MUST_OR_FAIL(elif_cond, ahead, "<expression>");
-        struct tau_anode *elif_block = parse_expr(ahead);
+        struct tau_anode *elif_block = parse_block(ahead);
         MUST_OR_FAIL(elif_block, ahead, "<block>");
         aux_branch = new_anode_binary(TAU_ANODE_ELIF_CASE, elif_token, elif_cond, elif_block);
         tau_ptr_stack_push(if_stmt->stack, aux_branch, tau_anode_free);
@@ -562,9 +567,12 @@ struct tau_anode *parse_if_stmt(struct tau_token *ahead) {
     }
 
     // Add else if present
-    struct tau_anode *else_block = parse_block(ahead);
-    if (else_block != NULL) {
-      aux_branch = new_anode_unary(TAU_ANODE_ELSE_CASE, if_token, else_block);
+    struct tau_token else_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_ELSE)) {
+      struct tau_anode *else_block = parse_block(ahead);
+      MUST_OR_FAIL(else_block, ahead, "<block>");
+
+      aux_branch = new_anode_unary(TAU_ANODE_ELSE_CASE, else_token, else_block);
       tau_ptr_stack_push(if_stmt->stack, aux_branch, tau_anode_free);
     }
 
@@ -1258,6 +1266,7 @@ void tau_anode_free(void *maybe_anode) {
     case TAU_ANODE_IDENTIFIER:
     case TAU_ANODE_BREAK_STMT:
     case TAU_ANODE_CONTINUE_STMT:
+    case TAU_ANODE_RETURN_WITHOUT_EXPR_STMT:
       break;
     case TAU_ANODE_NONE:
     case TAU_ANODE_COUNT:

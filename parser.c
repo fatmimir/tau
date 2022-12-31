@@ -57,7 +57,9 @@ struct tau_anode *parse_decls(struct tau_token *ahead) {
     node = parse_decl(ahead);
     if (node != NULL) {
       tau_ptr_stack_push(decls->stack, node, tau_anode_free);
-      continue;
+      if (match_and_consume(ahead, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE)) {
+        continue;
+      }
     }
 
     break;
@@ -124,7 +126,10 @@ struct tau_anode *parse_let_decl(struct tau_token *ahead) {
     MUST_OR_FAIL(type_bind, ahead, "<type bind>");
     tau_ptr_stack_push(let_decl->stack, type_bind, tau_anode_free);
 
-    if (!match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_PROTOTYPE)) {
+    struct tau_token prototype_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_PROTOTYPE)) {
+      tau_ptr_stack_push(let_decl->stack, new_anode(TAU_ANODE_PROTOTYPE, prototype_token), tau_anode_free);
+    } else {
       data_bind = parse_data_bind(ahead);
       MUST_OR_FAIL(type_bind, ahead, "<data bind>");
       tau_ptr_stack_push(let_decl->stack, data_bind, tau_anode_free);
@@ -175,20 +180,25 @@ struct tau_anode *parse_proc_decl(struct tau_token *ahead) {
     MUST_OR_FAIL(type_bind, ahead, "<type bind>");
     tau_ptr_stack_push(proc_decl->stack, type_bind, tau_anode_free);
 
+    // if it's a one-line procedure
     struct tau_anode *block_or_data_bind = parse_data_bind(ahead);
     if (block_or_data_bind != NULL) {
       tau_ptr_stack_push(proc_decl->stack, block_or_data_bind, tau_anode_free);
       return proc_decl;
     }
 
+    // if it's a block procedure
     block_or_data_bind = parse_block(ahead);
     if (block_or_data_bind != NULL) {
       tau_ptr_stack_push(proc_decl->stack, block_or_data_bind, tau_anode_free);
       return proc_decl;
     }
 
+    // only a prototype
+    struct tau_token prototype_token = *ahead;
     MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_PROTOTYPE), ahead,
                  "<data bind> <block> or <prototype>");
+    tau_ptr_stack_push(proc_decl->stack, new_anode(TAU_ANODE_PROTOTYPE, prototype_token), tau_anode_free);
     return proc_decl;
   }
 
@@ -285,7 +295,7 @@ struct tau_anode *parse_formal_args(struct tau_token *ahead) {
 
       struct tau_anode *arg = parse_formal_arg(ahead);
       if (arg != NULL) {
-        tau_ptr_stack_push(arg->stack, arg, tau_anode_free);
+        tau_ptr_stack_push(formal_args->stack, arg, tau_anode_free);
         if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COMMA, TAU_KEYWORD_NONE)) {
           continue;
         }
@@ -391,7 +401,7 @@ struct tau_anode *parse_block(struct tau_token *ahead) {
 
       statement_or_decl = parse_decl(ahead);
       if (statement_or_decl != NULL) {
-        tau_ptr_stack_push(statement_or_decl->stack, statement_or_decl, tau_ptr_stack_free);
+        tau_ptr_stack_push(block->stack, statement_or_decl, tau_anode_free);
         if (match_and_consume(ahead, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE)) {
           continue;
         }
@@ -1201,7 +1211,6 @@ void tau_anode_free(void *maybe_anode) {
     case TAU_ANODE_ELSE_CASE:
     case TAU_ANODE_TYPE_BIND:
     case TAU_ANODE_DATA_BIND:
-    case TAU_ANODE_FORMAL_ARG:
     case TAU_ANODE_RETURN_STMT:
       if (anode->left != NULL) {
         tau_anode_free(anode->left);
@@ -1243,6 +1252,7 @@ void tau_anode_free(void *maybe_anode) {
     case TAU_ANODE_TYPE_LOOKUP_EXPR:
     case TAU_ANODE_CALL_EXPR:
     case TAU_ANODE_CALL_STMT:
+    case TAU_ANODE_FORMAL_ARG:
       if (anode->left != NULL) {
         tau_anode_free(anode->left);
       }
@@ -1267,6 +1277,7 @@ void tau_anode_free(void *maybe_anode) {
     case TAU_ANODE_BREAK_STMT:
     case TAU_ANODE_CONTINUE_STMT:
     case TAU_ANODE_RETURN_WITHOUT_EXPR_STMT:
+    case TAU_ANODE_PROTOTYPE:
       break;
     case TAU_ANODE_NONE:
     case TAU_ANODE_COUNT:

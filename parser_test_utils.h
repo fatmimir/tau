@@ -28,6 +28,7 @@ static enum tau_anode_type tau_anode_type_from_name(const char *name, size_t len
       [TAU_ANODE_EXTERN_DECL] = "EXTERN_DECL",
       [TAU_ANODE_TYPE_BIND] = "TYPE_BIND",
       [TAU_ANODE_DATA_BIND] = "DATA_BIND",
+      [TAU_ANODE_PROTOTYPE] = "PROTOTYPE",
       [TAU_ANODE_FORMAL_ARGS] = "FORMAL_ARGS",
       [TAU_ANODE_FORMAL_ARG] = "FORMAL_ARG",
       [TAU_ANODE_PASSING_ARGS] = "PASSING_ARGS",
@@ -85,7 +86,8 @@ static enum tau_anode_type tau_anode_type_from_name(const char *name, size_t len
 
   enum tau_anode_type i;
   for (i = TAU_ANODE_NONE; i < TAU_ANODE_COUNT; i++) {
-    if (strncmp(anode_names[i], name, len) == 0) {
+    size_t comparing_len = strlen(anode_names[i]);
+    if (strncmp(anode_names[i], name, len) == 0 && len == comparing_len) {
       return i;
     }
   }
@@ -106,7 +108,6 @@ static int get_anode_type_arity(enum tau_anode_type type) {
     case TAU_ANODE_ELSE_CASE:
     case TAU_ANODE_TYPE_BIND:
     case TAU_ANODE_DATA_BIND:
-    case TAU_ANODE_FORMAL_ARG:
     case TAU_ANODE_RETURN_STMT:
       return 1;
     case TAU_ANODE_COMPILATION_UNIT:
@@ -145,6 +146,7 @@ static int get_anode_type_arity(enum tau_anode_type type) {
     case TAU_ANODE_TYPE_LOOKUP_EXPR:
     case TAU_ANODE_CALL_EXPR:
     case TAU_ANODE_CALL_STMT:
+    case TAU_ANODE_FORMAL_ARG:
       return 2;
     case TAU_ANODE_IF_BRANCH_STMT:
     case TAU_ANODE_BLOCK:
@@ -159,6 +161,7 @@ static int get_anode_type_arity(enum tau_anode_type type) {
     case TAU_ANODE_BREAK_STMT:
     case TAU_ANODE_CONTINUE_STMT:
     case TAU_ANODE_RETURN_WITHOUT_EXPR_STMT:
+    case TAU_ANODE_PROTOTYPE:
       return 0;
     case TAU_ANODE_NONE:
     case TAU_ANODE_COUNT:

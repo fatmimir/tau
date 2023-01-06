@@ -11,12 +11,19 @@
 #include "../src/log.h"
 #include "../src/parser_internal.h"
 #include "../src/parser_match.h"
-#define HANDLED_IDENTIFIER_TO_NODE_TYPE 3
+#define HANDLED_IDENTIFIER_TO_NODE_TYPE 10
 
 static enum tau_node_type identifier_to_node_type(const char *name, size_t len) {
   const char *anode_names[TAU_NODE_COUNT] = {
       [TAU_NODE_NONE] = "NONE",
       [TAU_NODE_CAST_EXPR] = "CAST_EXPR",
+      [TAU_NODE_U_POS_EXPR] = "U_POS_EXPR",
+      [TAU_NODE_U_NEG_EXPR] = "U_NEG_EXPR",
+      [TAU_NODE_U_LOG_NOT_EXPR] = "U_LOG_NOT_EXPR",
+      [TAU_NODE_U_BIT_NOT_EXPR] = "U_BIT_NOT_EXPR",
+      [TAU_NODE_U_REF_EXPR] = "U_REF_EXPR",
+      [TAU_NODE_CALL_EXPR] = "CALL_EXPR",
+      [TAU_NODE_INDEX_EXPR] = "INDEX_EXPR",
       [TAU_NODE_ATOM] = "ATOM",
   };
   static_assert(HANDLED_IDENTIFIER_TO_NODE_TYPE == TAU_NODE_COUNT);
@@ -35,13 +42,21 @@ static enum tau_node_type identifier_to_node_type(const char *name, size_t len) 
 // NOLINTNEXTLINE(misc-no-recursion)
 static struct tau_node *parse_topology_expr(struct tau_token *ahead) {
   struct tau_node *node = NULL;
+  struct tau_node *left = NULL;
+  struct tau_node *right = NULL;
   struct tau_token node_start = *ahead;
   if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_LPAR, TAU_KEYWORD_NONE)) {
     struct tau_node *identifier = parse_atom(ahead);
-    MUST_OR_FAIL(identifier && identifier->type == TAU_TOKEN_TYPE_IDENTIFIER, ahead, "<topology identifier>");
+    MUST_OR_FAIL(identifier && identifier->type == TAU_NODE_ATOM, ahead, "<topology identifier>");
     enum tau_node_type target_type = identifier_to_node_type(identifier->token.buf, identifier->token.len);
-    struct tau_node *left = parse_topology_expr(ahead);
-    struct tau_node *right = parse_topology_expr(ahead);
+    if (!match(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RPAR, TAU_KEYWORD_NONE)) {
+      left = parse_topology_expr(ahead);
+    }
+
+    if (!match(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RPAR, TAU_KEYWORD_NONE)) {
+      right = parse_topology_expr(ahead);
+    }
+
     node = node_new_binary(target_type, node_start, left, right);
     MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RPAR, TAU_KEYWORD_NONE), ahead, "<closing topology `)`>");
     return node;
@@ -54,6 +69,14 @@ static struct tau_node *parse_topology_expr(struct tau_token *ahead) {
 handle_fail:
   if (node != NULL) {
     node_free(node);
+  }
+
+  if (left != NULL) {
+    node_free(left);
+  }
+
+  if (right != NULL) {
+    node_free(right);
   }
 
   return NULL;

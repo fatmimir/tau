@@ -50,7 +50,7 @@ struct tau_node *node_new_binary(enum tau_node_type type, struct tau_token token
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_expr: ahead cannot be NULL");
-  return parse_ref_expr(ahead);
+  return parse_term_expr(ahead);
 }
 
 struct tau_node *parse_cast_expr(struct tau_token *ahead) {
@@ -88,13 +88,72 @@ struct tau_node *parse_bit_shift_expr(struct tau_token *ahead) {
   return NULL;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_term_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_term_expr: ahead cannot be NULL");
+  struct tau_node *left = parse_fact_expr(ahead);
+  for (;;) {
+    struct tau_token infix_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_PLUS, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_fact_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_ADD_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_HYPHEN, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_fact_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_SUB_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    break;
+  }
+
+  return left;
+handle_fail:
+  if (left != NULL) {
+    node_free(left);
+  }
   return NULL;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_fact_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_fact_expr: ahead cannot be NULL");
+  struct tau_node *left = parse_ref_expr(ahead);
+  for (;;) {
+    struct tau_token infix_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_AST, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_ref_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_MUL_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_SLASH, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_ref_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_DIV_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_PCT, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_ref_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_REM_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    break;
+  }
+
+  return left;
+handle_fail:
+  if (left != NULL) {
+    node_free(left);
+  }
   return NULL;
 }
 

@@ -17,7 +17,7 @@
 #define EXPONENT_WITH_SIGN_PREFIX_LEN 2
 #define ESCAPE_SEQUENCE_PREFIX_LEN 2
 #define EXHAUSTIVE_PUNCT_TABLE_COUNT 44
-#define EXHAUSTIVE_KEYWORD_TABLE_COUNT 17
+#define EXHAUSTIVE_KEYWORD_TABLE_COUNT 18
 #define EXHAUSTIVE_TOKEN_NAME_TABLE_COUNT 12
 
 // TABLES
@@ -41,8 +41,8 @@ const char *keyword_table[] = {
     [TAU_KEYWORD_FALSE] = "false",   [TAU_KEYWORD_MODULE] = "module", [TAU_KEYWORD_EXTERN] = "extern",
     [TAU_KEYWORD_PROC] = "proc",     [TAU_KEYWORD_LET] = "let",       [TAU_KEYWORD_PROTOTYPE] = "prototype",
     [TAU_KEYWORD_IF] = "if",         [TAU_KEYWORD_ELIF] = "elif",     [TAU_KEYWORD_ELSE] = "else",
-    [TAU_KEYWORD_WHILE] = "while",     [TAU_KEYWORD_BREAK] = "break",   [TAU_KEYWORD_CONTINUE] = "continue",
-    [TAU_KEYWORD_RETURN] = "return",
+    [TAU_KEYWORD_WHILE] = "while",   [TAU_KEYWORD_BREAK] = "break",   [TAU_KEYWORD_CONTINUE] = "continue",
+    [TAU_KEYWORD_RETURN] = "return", [TAU_KEYWORD_AS] = "as",
 };
 static_assert(TAU_KEYWORD_COUNT == EXHAUSTIVE_KEYWORD_TABLE_COUNT && "outdated exhaustive keyword table");
 
@@ -293,7 +293,7 @@ bool tokenize_as_str_lit(struct tau_token *cur) {
       cur->type = TAU_TOKEN_TYPE_STR_LIT;
     } else {
       move_len_ahead(cur, ahead);
-      tau_log(TAU_LOG_LEVEL_ERROR, cur->loc,
+      tau_log(TAU_LOG_ERROR, cur->loc,
               "unclosed string literal, new line (U+000A) found before quotation mark (\" U+0022)");
       cur->type = TAU_TOKEN_TYPE_NONE;
     }
@@ -479,7 +479,7 @@ struct tau_token tau_token_next(const struct tau_token prev) {
   uint8_t unknown_uc_len = tau_dec_bytes_to_cp(cur.buf, &unknown_uc);
   char unknown_uc_enc[10] = {0};
   tau_enc_cp_to_bytes(unknown_uc, unknown_uc_enc);
-  tau_log(TAU_LOG_LEVEL_ERROR, cur.loc, "unknown unicode character `%s` (U+%ld)", unknown_uc_enc, unknown_uc);
+  tau_log(TAU_LOG_ERROR, cur.loc, "unknown unicode character `%s` (U+%ld)", unknown_uc_enc, unknown_uc);
   move_len_ahead(&cur, cur.buf + unknown_uc_len);
   cur.type = TAU_TOKEN_TYPE_NONE;
   return cur;

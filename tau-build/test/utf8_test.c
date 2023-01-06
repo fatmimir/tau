@@ -8,9 +8,9 @@
 #include <cmocka.h>
 // clang-format on
 
-#include "utf8.h"
+#include "../src/utf8.h"
 
-#include "common.h"
+#include "../src/common.h"
 
 static void test_tau_enc_cp_to_bytes(void **state) {
   (void)state;

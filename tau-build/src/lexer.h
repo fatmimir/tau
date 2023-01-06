@@ -91,6 +91,7 @@ enum tau_keyword {
   TAU_KEYWORD_BREAK,      // break
   TAU_KEYWORD_CONTINUE,   // continue
   TAU_KEYWORD_RETURN,     // return
+  TAU_KEYWORD_AS,         // as
   TAU_KEYWORD_COUNT,
 };
 

@@ -10,11 +10,11 @@
 #include "common.h"
 
 enum tau_log_level {
-  TAU_LOG_LEVEL_TRACE,
-  TAU_LOG_LEVEL_DEBUG,
-  TAU_LOG_LEVEL_INFO,
-  TAU_LOG_LEVEL_WARN,
-  TAU_LOG_LEVEL_ERROR,
+  TAU_LOG_TRACE,
+  TAU_LOG_DEBUG,
+  TAU_LOG_INFO,
+  TAU_LOG_WARN,
+  TAU_LOG_ERROR,
 };
 
 void tau_log(enum tau_log_level level, struct tau_loc loc, const char *fmt, ...);

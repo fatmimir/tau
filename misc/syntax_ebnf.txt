@@ -19,9 +19,9 @@ bit_or_expr = bit_and_expr, { "|" bit_and_expr | "^" bit_and_expr };
 bit_and_expr = bit_shift_expr, { "&" bit_shift_expr };
 bit_shift_expr = fact_expr, { "+" fact_expr | "-" fact_expr };
 fact_expr = term_expr, { "*" proof_expr | "/" proof_expr | "%" proof_expr };
-proof_expr = static_lookup, { ":" static_lookup };
-static_lookup = value_lookup, { "::" value_lookup };
-value_lookup = unary_expr, { "." unary_expr };
+proof_expr = static_lookup_expr, { ":" static_lookup_expr };
+static_lookup_expr = value_lookup_expr, { "::" value_lookup_expr };
+value_lookup_expr = unary_expr, { "." unary_expr };
 unary_expr = {"+" | "-" | "!" | "~" | "&"}, call_expr;
 call_expr = index_expr, { passing_args };
 index_expr = primary_expr, { index_lookup };
@@ -55,7 +55,7 @@ proc_deconstruction = identifier, proc_signature;
 type_deconstruction = identifier;
 
 (* root declarations *)
-module_decl = "module", static_lookup;
+module_decl = "module", static_lookup_expr;
 
 (* declarations *)
 let_decl = "let", let_deconstruction, ("prototype" | data_bind);

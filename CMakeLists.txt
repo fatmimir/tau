@@ -10,17 +10,10 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Include scripts
-include(cmake/FetchCMocka.cmake)
-
-# Macros
-macro(setup_test TARGET TEST_SOURCES)
-    add_executable(${TARGET} ${ARGN} ${TARGET}.c)
-    target_link_libraries(${TARGET} PRIVATE cmocka-static)
-    add_test(NAME ${TARGET} COMMAND ${TARGET})
-endmacro()
+include(${CMAKE_SOURCE_DIR}/cmake/FetchCMocka.cmake)
 
 # Testing
 enable_testing()
-setup_test(utf8_test common.h utf8.h utf8.c)
-setup_test(lexer_test common.h utf8.h utf8.c uc_names.h log.h log.c lexer.h lexer.c)
-setup_test(parser_test common.h utf8.h utf8.c uc_names.h log.h log.c lexer.h lexer.c parser.h parser.c)
+
+# Include subdirectories
+add_subdirectory(tau-build)

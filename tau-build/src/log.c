@@ -9,7 +9,7 @@
 
 void tau_log(enum tau_log_level level, struct tau_loc loc, const char *fmt, ...) {
   FILE *target = stdout;
-  if (level == TAU_LOG_LEVEL_ERROR) {
+  if (level == TAU_LOG_ERROR) {
     target = stderr;
   }
 
@@ -18,19 +18,19 @@ void tau_log(enum tau_log_level level, struct tau_loc loc, const char *fmt, ...)
 
   fprintf(target, "%s:%ld:%ld ", loc.buf_name, loc.row, loc.col);
   switch (level) {
-    case TAU_LOG_LEVEL_TRACE:
+    case TAU_LOG_TRACE:
       fprintf(target, "trace: ");
       break;
-    case TAU_LOG_LEVEL_DEBUG:
+    case TAU_LOG_DEBUG:
       fprintf(target, "debug: ");
       break;
-    case TAU_LOG_LEVEL_INFO:
+    case TAU_LOG_INFO:
       fprintf(target, "info: ");
       break;
-    case TAU_LOG_LEVEL_WARN:
+    case TAU_LOG_WARN:
       fprintf(target, "warn: ");
       break;
-    case TAU_LOG_LEVEL_ERROR:
+    case TAU_LOG_ERROR:
       fprintf(target, "error: ");
       break;
   }

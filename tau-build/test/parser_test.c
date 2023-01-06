@@ -5,7 +5,8 @@
 #include <cmocka.h>
 // clang-format on
 
-#include "common.h"
+#include "../src/common.h"
+#include "topology_helper.h"
 
 static void test_example(void **state) {
   UNUSED(state);

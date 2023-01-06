@@ -8,11 +8,11 @@
 #include <cmocka.h>
 // clang-format on
 
-#include "lexer.h"
+#include "../src/lexer.h"
 
 #include <string.h>
 
-#include "common.h"
+#include "../src/common.h"
 
 static void test_tokenize_spaces(void **state) {
   UNUSED(state);

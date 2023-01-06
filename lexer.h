@@ -87,7 +87,7 @@ enum tau_keyword {
   TAU_KEYWORD_IF,         // if
   TAU_KEYWORD_ELIF,       // elif
   TAU_KEYWORD_ELSE,       // else
-  TAU_KEYWORD_LOOP,       // loop
+  TAU_KEYWORD_WHILE,      // while
   TAU_KEYWORD_BREAK,      // break
   TAU_KEYWORD_CONTINUE,   // continue
   TAU_KEYWORD_RETURN,     // return

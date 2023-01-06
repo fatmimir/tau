@@ -5,52 +5,63 @@ literal = ? any literal emitted by lexer (string, numeric, boolean, nil and unit
 (* notice: lexer will remove comments automatically, this may change in future to allow semantic comments *)
 (* notice: lexer will automatically detect when a space and a new line are required, so we ignore them on the parser *)
 
-(* file level *)
-compilation_unit = module_decl, decls eof;
-decls = { decl, eol };
+(* args and lookups *)
+passing_args = "(" [expr, {",", expr}, [","]], ")";
+index_lookup = "[" expr "]";
 
-(* declarations *)
-module_decl = "module", type_lookup_expr, eol;
-let_decl = "let", identifier, type_bind, (data_bind | "prototype");
-proc_decl = "proc", identifier, formal_args, type_bind, (block | data_bind | "prototype");
-extern_decl = "extern", ( let_decl | proc_decl );
-decl = let_decl | proc_decl | extern_decl;
+(* expressions *)
+expr = cast_expr
+cast_expr = log_or_expr { "as", log_or_expr };
+log_or_expr = log_and_expr, { "||", log_and_expr };
+log_and_expr = rel_expr, { "&&", rel_expr };
+rel_expr = cmp_expr, { "==", bit_or_expr | "!=", bit_or_expr };
+bit_or_expr = bit_and_expr, { "|" bit_and_expr | "^" bit_and_expr };
+bit_and_expr = bit_shift_expr, { "&" bit_shift_expr };
+bit_shift_expr = fact_expr, { "+" fact_expr | "-" fact_expr };
+fact_expr = term_expr, { "*" proof_expr | "/" proof_expr | "%" proof_expr };
+proof_expr = static_lookup, { ":" static_lookup };
+static_lookup = value_lookup, { "::" value_lookup };
+value_lookup = unary_expr, { "." unary_expr };
+unary_expr = {"+" | "-" | "!" | "~" | "&"}, call_expr;
+call_expr = index_expr, { passing_args };
+index_expr = primary_expr, { index_lookup };
+primary_expr = "(" expr ")" | atom;
+atom = identifier | literal;
+
+(* statements *)
+return_stmt = "return" expr;
+continue_stmt = "continue";
+break_stmt = "break";
+if_stmt = "if" main_case, {elif_case}, [else_case];
+main_case = expr, block;
+elif_case = "elif", expr, block;
+else_case = "else", block;
+while_stmt = "while", expr, block;
 
 (* bindings *)
 type_bind = ":", expr;
 data_bind = "=", expr;
 
-(* arguments *)
-formal_args = "(", [ formal_arg | { formal_arg, "," } ], ")";
-formal_arg = identifier, type_bind;
-passing_args = "(", [ expr | { expr, "," } ], ")";
-
 (* code block *)
-block = "{", [eol], { statement eol }, "}";
+statement_or_decl = statement | decl;
+block = "{", { statement_or_decl, eol }, "}";
 
-(* statements *)
-return_stmt = "return", expr;
-continue_stmt = "continue";
-break_stmt = "break";
-assign_or_call_stmt = (data_lookup_expr, ("=" | "+=" | "-=" | "*=" | "/=" | ">>=" | "<<=" | "&=" | "|=" | "^="), expr) | call_expr;
-if_stmt = "if", expr, block, { "elif", expr, block }, [ "else" block ];
-loop_stmt = "loop" block;
-statement = break_stmt | continue_stmt | return_stmt | call_stmt | assign_stmt | if_stmt | loop_stmt;
+(* deconstruction *)
+let_deconstruction = identifier, type_bind;
+proc_signature = formal_arg_list, type_bind;
+formal_arg_list = "(", [formal_arg_item, {",", formal_arg_item}, [","]], ")";
+formal_arg_item = identifier, type_bind, ",";
+proc_deconstruction = identifier, proc_signature;
+type_deconstruction = identifier;
 
-(* expressions *)
-expr = log_or_expr;
-log_or_expr = log_and_expr, { "||", log_and_expr };
-log_and_expr = rel_expr, { "&&", rel_expr };
-rel_expr = cmp_expr, { "==", cmp_expr | "!=", cmp_expr };
-cmp_expr = bit_or_expr, { ">", bit_or_expr | "<", bit_or_expr | ">=", bit_or_expr | "<=", bit_or_expr};
-bit_or_expr = bit_and_expr, { "|", bit_and_expr | "^", bit_and_expr };
-bit_and_expr = bit_shift_expr, { "&", bit_shift_expr };
-bit_shift_expr = sum_expr, { ">>", sum_expr | "<<", sum_expr };
-sum_expr = mul_expr, { "+", mul_expr | "-", mul_expr  };
-mul_expr = unary_expr, { "*", unary_expr | "/", unary_expr | "%", unary_expr};
-unary_expr = { "+" | "-" | "&" | "!" | "~" }, tag_expr;
-tag_expr = call_expr, { "'", call_expr };
-call_expr = data_lookup_expr, { passing_args };
-data_lookup_expr = type_lookup_expr, { ".", type_lookup_expr };
-type_lookup_expr = atom_expr { "::", atom_expr };
-atom_expr = "(" expr ")" | identifier | literal;
+(* root declarations *)
+module_decl = "module", static_lookup;
+
+(* declarations *)
+let_decl = "let", let_deconstruction, ("prototype" | data_bind);
+proc_decl = "proc", proc_deconstruction, ("prototype" | data_bind | block);
+type_decl = "type", type_deconstruction, ("prototype" | data_bind);
+decl = module_decl | let_decl | proc_decl;
+
+(* compilation_unit *)
+compilation_unit = module_decl, eol, { decl, eol } eof;

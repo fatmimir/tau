@@ -41,7 +41,7 @@ const char *keyword_table[] = {
     [TAU_KEYWORD_FALSE] = "false",   [TAU_KEYWORD_MODULE] = "module", [TAU_KEYWORD_EXTERN] = "extern",
     [TAU_KEYWORD_PROC] = "proc",     [TAU_KEYWORD_LET] = "let",       [TAU_KEYWORD_PROTOTYPE] = "prototype",
     [TAU_KEYWORD_IF] = "if",         [TAU_KEYWORD_ELIF] = "elif",     [TAU_KEYWORD_ELSE] = "else",
-    [TAU_KEYWORD_LOOP] = "loop",     [TAU_KEYWORD_BREAK] = "break",   [TAU_KEYWORD_CONTINUE] = "continue",
+    [TAU_KEYWORD_WHILE] = "while",     [TAU_KEYWORD_BREAK] = "break",   [TAU_KEYWORD_CONTINUE] = "continue",
     [TAU_KEYWORD_RETURN] = "return",
 };
 static_assert(TAU_KEYWORD_COUNT == EXHAUSTIVE_KEYWORD_TABLE_COUNT && "outdated exhaustive keyword table");

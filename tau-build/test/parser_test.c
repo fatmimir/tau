@@ -132,6 +132,32 @@ static void test_parse_unary_expr(void **state) {
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
 
+static void test_parse_static_lookup_expr(void **state) {
+  UNUSED(state);
+  const char *test = "a::b; a::b::c; a::b.0;";
+  struct tau_token start = tau_token_start(__func__, test, strlen(test));
+  struct tau_token token = tau_token_next(start);
+  struct tau_node *node = NULL;
+
+  node = parse_value_lookup_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(STATIC_LOOKUP_EXPR a b)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_value_lookup_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(STATIC_LOOKUP_EXPR (STATIC_LOOKUP_EXPR a b) c)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_value_lookup_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(VALUE_LOOKUP_EXPR (STATIC_LOOKUP_EXPR a b) 0)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+}
+
 static void test_parse_value_lookup_expr(void **state) {
   UNUSED(state);
   const char *test = "a.b; a.b.c; a.b.0;";
@@ -141,19 +167,45 @@ static void test_parse_value_lookup_expr(void **state) {
 
   node = parse_value_lookup_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(B_VALUE_LOOKUP_EXPR a b)");
+  assert_node_topology(node, "(VALUE_LOOKUP_EXPR a b)");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
   node = parse_value_lookup_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(B_VALUE_LOOKUP_EXPR (B_VALUE_LOOKUP_EXPR a b) c)");
+  assert_node_topology(node, "(VALUE_LOOKUP_EXPR (VALUE_LOOKUP_EXPR a b) c)");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
   node = parse_value_lookup_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(B_VALUE_LOOKUP_EXPR (B_VALUE_LOOKUP_EXPR a b) 0)");
+  assert_node_topology(node, "(VALUE_LOOKUP_EXPR (VALUE_LOOKUP_EXPR a b) 0)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+}
+
+static void test_parse_proof_expr(void **state) {
+  UNUSED(state);
+  const char *test = "a:b; a:b:c; a:b::c;";
+  struct tau_token start = tau_token_start(__func__, test, strlen(test));
+  struct tau_token token = tau_token_next(start);
+  struct tau_node *node = NULL;
+
+  node = parse_proof_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(PROOF_EXPR a b)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_proof_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(PROOF_EXPR (PROOF_EXPR a b) c)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_proof_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(PROOF_EXPR a (STATIC_LOOKUP_EXPR b c))");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
@@ -169,7 +221,9 @@ int main() {
       cmocka_unit_test(test_parse_index_expr),            // <expr> "[" <expr> "]" ...
       cmocka_unit_test(test_parse_call_expr),             // <expr> "(" <expr> ")" ...
       cmocka_unit_test(test_parse_unary_expr),            // <op><expr>
+      cmocka_unit_test(test_parse_static_lookup_expr),    // <expr>::<expr> ...
       cmocka_unit_test(test_parse_value_lookup_expr),     // <expr>.<expr> ...
+      cmocka_unit_test(test_parse_proof_expr),            // <expr>:<expr> ...
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

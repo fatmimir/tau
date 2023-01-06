@@ -10,7 +10,9 @@
 enum tau_node_type {
   TAU_NODE_NONE,
   TAU_NODE_CAST_EXPR,
-  TAU_NODE_B_VALUE_LOOKUP_EXPR,
+  TAU_NODE_PROOF_EXPR,
+  TAU_NODE_STATIC_LOOKUP_EXPR,
+  TAU_NODE_VALUE_LOOKUP_EXPR,
   TAU_NODE_U_POS_EXPR,
   TAU_NODE_U_NEG_EXPR,
   TAU_NODE_U_LOG_NOT_EXPR,
@@ -44,8 +46,8 @@ struct tau_node *parse_bit_and_expr(struct tau_token *ahead);
 struct tau_node *parse_bit_shift_expr(struct tau_token *ahead);
 struct tau_node *parse_fact_expr(struct tau_token *ahead);
 struct tau_node *parse_proof_expr(struct tau_token *ahead);
-struct tau_node *parse_static_lookup_expr(struct tau_token *ahead);
 struct tau_node *parse_value_lookup_expr(struct tau_token *ahead);
+struct tau_node *parse_static_lookup_expr(struct tau_token *ahead);
 struct tau_node *parse_unary_expr(struct tau_token *ahead);
 struct tau_node *parse_call_expr(struct tau_token *ahead);
 struct tau_node *parse_index_expr(struct tau_token *ahead);

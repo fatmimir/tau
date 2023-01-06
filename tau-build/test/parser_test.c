@@ -108,7 +108,7 @@ static void test_parse_call_expr(void **state) {
 
 static void test_parse_unary_expr(void **state) {
   UNUSED(state);
-  const char *test = "-1; &a; !~1;";
+  const char *test = "-1; +a; !~1;";
   struct tau_token start = tau_token_start(__func__, test, strlen(test));
   struct tau_token token = tau_token_next(start);
   struct tau_node *node = NULL;
@@ -121,7 +121,7 @@ static void test_parse_unary_expr(void **state) {
 
   node = parse_unary_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(U_REF_EXPR a)");
+  assert_node_topology(node, "(U_POS_EXPR a)");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
@@ -210,6 +210,32 @@ static void test_parse_proof_expr(void **state) {
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
 
+static void test_parse_ref_expr(void **state) {
+  UNUSED(state);
+  const char *test = "&a; &a::b; &a::b.c;";
+  struct tau_token start = tau_token_start(__func__, test, strlen(test));
+  struct tau_token token = tau_token_next(start);
+  struct tau_node *node = NULL;
+
+  node = parse_ref_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(U_REF_EXPR a)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_ref_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(U_REF_EXPR (STATIC_LOOKUP_EXPR a b))");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_ref_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(U_REF_EXPR (VALUE_LOOKUP_EXPR (STATIC_LOOKUP_EXPR a b) c))");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+}
+
 
 int main() {
   UNUSED_TYPE(jmp_buf);
@@ -224,6 +250,7 @@ int main() {
       cmocka_unit_test(test_parse_static_lookup_expr),    // <expr>::<expr> ...
       cmocka_unit_test(test_parse_value_lookup_expr),     // <expr>.<expr> ...
       cmocka_unit_test(test_parse_proof_expr),            // <expr>:<expr> ...
+      cmocka_unit_test(test_parse_ref_expr),              // &<expr> ...
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

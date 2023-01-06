@@ -50,7 +50,7 @@ struct tau_node *node_new_binary(enum tau_node_type type, struct tau_token token
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_expr: ahead cannot be NULL");
-  return parse_proof_expr(ahead);
+  return parse_ref_expr(ahead);
 }
 
 struct tau_node *parse_cast_expr(struct tau_token *ahead) {
@@ -88,9 +88,44 @@ struct tau_node *parse_bit_shift_expr(struct tau_token *ahead) {
   return NULL;
 }
 
+struct tau_node *parse_term_expr(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_term_expr: ahead cannot be NULL");
+  return NULL;
+}
+
 struct tau_node *parse_fact_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_fact_expr: ahead cannot be NULL");
   return NULL;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_ref_expr(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_ref_expr: ahead cannot be NULL");
+  struct tau_node *node = NULL;
+  struct tau_node *root = NULL;
+  for (;;) {
+    struct tau_token unary_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_AMP, TAU_KEYWORD_NONE)) {
+      if (node == NULL) {
+        node = node_new_unary(TAU_NODE_U_REF_EXPR, unary_token, NULL);
+        root = node;
+      } else {
+        node->left = node_new_unary(TAU_NODE_U_REF_EXPR, unary_token, NULL);
+        node = node->left;
+      }
+
+      continue;
+    }
+
+    break;
+  }
+
+  if (root == NULL) {
+    return parse_proof_expr(ahead);
+  }
+
+  node->left = parse_proof_expr(ahead);
+  return root;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
@@ -171,9 +206,9 @@ struct tau_node *parse_unary_expr(struct tau_token *ahead) {
   struct tau_node *node = NULL;
   struct tau_node *root = NULL;
   enum tau_punct matching_punct[] = {TAU_PUNCT_PLUS,  TAU_PUNCT_HYPHEN, TAU_PUNCT_BANG,
-                                     TAU_PUNCT_TILDE, TAU_PUNCT_AMP,    TAU_PUNCT_NONE};
+                                     TAU_PUNCT_TILDE, TAU_PUNCT_NONE};
   enum tau_node_type producing_types[] = {TAU_NODE_U_POS_EXPR, TAU_NODE_U_NEG_EXPR, TAU_NODE_U_LOG_NOT_EXPR,
-                                          TAU_NODE_U_BIT_NOT_EXPR, TAU_NODE_U_REF_EXPR, TAU_NODE_NONE};
+                                          TAU_NODE_U_BIT_NOT_EXPR, TAU_NODE_NONE};
   for (;;) {
     bool should_continue = false;
     for (int i = 0; matching_punct[i] != TAU_PUNCT_NONE; i++) {

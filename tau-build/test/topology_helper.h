@@ -17,6 +17,7 @@ static enum tau_node_type identifier_to_node_type(const char *name, size_t len) 
   const char *anode_names[TAU_NODE_COUNT] = {
       [TAU_NODE_NONE] = "NONE",
       [TAU_NODE_CAST_EXPR] = "CAST_EXPR",
+      [TAU_NODE_U_REF_EXPR] = "U_REF_EXPR",
       [TAU_NODE_PROOF_EXPR] = "PROOF_EXPR",
       [TAU_NODE_VALUE_LOOKUP_EXPR] = "VALUE_LOOKUP_EXPR",
       [TAU_NODE_STATIC_LOOKUP_EXPR] = "STATIC_LOOKUP_EXPR",
@@ -24,7 +25,6 @@ static enum tau_node_type identifier_to_node_type(const char *name, size_t len) 
       [TAU_NODE_U_NEG_EXPR] = "U_NEG_EXPR",
       [TAU_NODE_U_LOG_NOT_EXPR] = "U_LOG_NOT_EXPR",
       [TAU_NODE_U_BIT_NOT_EXPR] = "U_BIT_NOT_EXPR",
-      [TAU_NODE_U_REF_EXPR] = "U_REF_EXPR",
       [TAU_NODE_CALL_EXPR] = "CALL_EXPR",
       [TAU_NODE_INDEX_EXPR] = "INDEX_EXPR",
       [TAU_NODE_ATOM] = "ATOM",

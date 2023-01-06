@@ -288,6 +288,33 @@ static void test_parse_term_expr(void **state) {
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
 
+static void test_parse_bit_shift_expr(void **state) {
+  UNUSED(state);
+  const char *test = "a>>b; a<<b>>c; a>>b*c;";
+  struct tau_token start = tau_token_start(__func__, test, strlen(test));
+  struct tau_token token = tau_token_next(start);
+  struct tau_node *node = NULL;
+
+  node = parse_bit_shift_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(RSH_EXPR a b)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_bit_shift_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(RSH_EXPR (LSH_EXPR a b) c)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_bit_shift_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(RSH_EXPR a (MUL_EXPR b c))");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+}
+
+
 int main() {
   UNUSED_TYPE(jmp_buf);
   UNUSED_TYPE(va_list);
@@ -304,6 +331,7 @@ int main() {
       cmocka_unit_test(test_parse_ref_expr),              // &<expr> ...
       cmocka_unit_test(test_parse_fact_expr),             // <expr> <* / %> <expr>,
       cmocka_unit_test(test_parse_term_expr),             // <expr> <+ -> <expr>,
+      cmocka_unit_test(test_parse_bit_shift_expr),        // <expr> <'>>' '<<'> <expr>,
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

@@ -11,7 +11,7 @@
 #include "../src/log.h"
 #include "../src/parser_internal.h"
 #include "../src/parser_match.h"
-#define HANDLED_IDENTIFIER_TO_NODE_TYPE 44
+#define HANDLED_IDENTIFIER_TO_NODE_TYPE 62
 
 static enum tau_node_type identifier_to_node_type(const char *name, size_t len) {
   const char *anode_names[TAU_NODE_COUNT] = {
@@ -59,6 +59,24 @@ static enum tau_node_type identifier_to_node_type(const char *name, size_t len) 
       [TAU_NODE_STATEMENT_OR_DECL] = "STATEMENT_OR_DECL",
       [TAU_NODE_BLOCK] = "BLOCK",
       [TAU_NODE_EXPR_WITH_BLOCK] = "EXPR_WITH_BLOCK",
+      [TAU_NODE_TYPE_BIND] = "TYPE_BIND",
+      [TAU_NODE_DATA_BIND] = "DATA_BIND",
+      [TAU_NODE_LET_DECONSTRUCTION] = "LET_DECONSTRUCTION",
+      [TAU_NODE_PROC_SIGNATURE] = "PROC_SIGNATURE",
+      [TAU_NODE_FORMAL_ARGS] = "FORMAL_ARGS",
+      [TAU_NODE_FORMAL_ARG] = "FORMAL_ARG",
+      [TAU_NODE_ARG_BIND] = "ARG_BIND",
+      [TAU_NODE_PROC_DECONSTRUCTION] = "PROC_DECONSTRUCTION",
+      [TAU_NODE_TYPE_DECONSTRUCTION] = "TYPE_DECONSTRUCTION",
+      [TAU_NODE_MODULE_DECL] = "MODULE_DECL",
+      [TAU_NODE_PROTOTYPE_SUFFIX] = "PROTOTYPE_SUFFIX",
+      [TAU_NODE_LET_DECL] = "LET_DECL",
+      [TAU_NODE_PROC_DECL] = "PROC_DECL",
+      [TAU_NODE_TYPE_DECL] = "TYPE_DECL",
+      [TAU_NODE_EXTERN_DECL] = "EXTERN_DECL",
+      [TAU_NODE_DECL] = "DECL",
+      [TAU_NODE_DECLS] = "DECLS",
+      [TAU_NODE_COMPILATION_UNIT] = "COMPILATION_UNIT",
   };
   static_assert(HANDLED_IDENTIFIER_TO_NODE_TYPE == TAU_NODE_COUNT);
 

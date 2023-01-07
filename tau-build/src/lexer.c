@@ -17,7 +17,7 @@
 #define EXPONENT_WITH_SIGN_PREFIX_LEN 2
 #define ESCAPE_SEQUENCE_PREFIX_LEN 2
 #define EXHAUSTIVE_PUNCT_TABLE_COUNT 44
-#define EXHAUSTIVE_KEYWORD_TABLE_COUNT 18
+#define EXHAUSTIVE_KEYWORD_TABLE_COUNT 19
 #define EXHAUSTIVE_TOKEN_NAME_TABLE_COUNT 12
 
 // TABLES
@@ -37,11 +37,14 @@ const char *punct_table[] = {
 static_assert(TAU_PUNCT_COUNT == EXHAUSTIVE_PUNCT_TABLE_COUNT && "outdated exhaustive punct table");
 
 const char *keyword_table[] = {
-    [TAU_KEYWORD_NIL] = "nil",       [TAU_KEYWORD_UNIT] = "unit",     [TAU_KEYWORD_TRUE] = "true",
-    [TAU_KEYWORD_FALSE] = "false",   [TAU_KEYWORD_MODULE] = "module", [TAU_KEYWORD_EXTERN] = "extern",
-    [TAU_KEYWORD_PROC] = "proc",     [TAU_KEYWORD_LET] = "let",       [TAU_KEYWORD_PROTOTYPE] = "prototype",
-    [TAU_KEYWORD_IF] = "if",         [TAU_KEYWORD_ELIF] = "elif",     [TAU_KEYWORD_ELSE] = "else",
-    [TAU_KEYWORD_WHILE] = "while",   [TAU_KEYWORD_BREAK] = "break",   [TAU_KEYWORD_CONTINUE] = "continue",
+    [TAU_KEYWORD_NIL] = "nil",       [TAU_KEYWORD_UNIT] = "unit",
+    [TAU_KEYWORD_TRUE] = "true",     [TAU_KEYWORD_FALSE] = "false",
+    [TAU_KEYWORD_MODULE] = "module", [TAU_KEYWORD_EXTERN] = "extern",
+    [TAU_KEYWORD_PROC] = "proc",     [TAU_KEYWORD_LET] = "let",
+    [TAU_KEYWORD_TYPE] = "type",     [TAU_KEYWORD_PROTOTYPE] = "prototype",
+    [TAU_KEYWORD_IF] = "if",         [TAU_KEYWORD_ELIF] = "elif",
+    [TAU_KEYWORD_ELSE] = "else",     [TAU_KEYWORD_WHILE] = "while",
+    [TAU_KEYWORD_BREAK] = "break",   [TAU_KEYWORD_CONTINUE] = "continue",
     [TAU_KEYWORD_RETURN] = "return", [TAU_KEYWORD_AS] = "as",
 };
 static_assert(TAU_KEYWORD_COUNT == EXHAUSTIVE_KEYWORD_TABLE_COUNT && "outdated exhaustive keyword table");

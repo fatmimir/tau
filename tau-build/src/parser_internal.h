@@ -54,6 +54,22 @@ enum tau_node_type {
   TAU_NODE_EXPR_WITH_BLOCK,
   TAU_NODE_TYPE_BIND,
   TAU_NODE_DATA_BIND,
+  TAU_NODE_LET_DECONSTRUCTION,
+  TAU_NODE_PROC_SIGNATURE,
+  TAU_NODE_FORMAL_ARGS,
+  TAU_NODE_FORMAL_ARG,
+  TAU_NODE_ARG_BIND,
+  TAU_NODE_PROC_DECONSTRUCTION,
+  TAU_NODE_TYPE_DECONSTRUCTION,
+  TAU_NODE_MODULE_DECL,
+  TAU_NODE_PROTOTYPE_SUFFIX,
+  TAU_NODE_LET_DECL,
+  TAU_NODE_PROC_DECL,
+  TAU_NODE_TYPE_DECL,
+  TAU_NODE_EXTERN_DECL,
+  TAU_NODE_DECL,
+  TAU_NODE_DECLS,
+  TAU_NODE_COMPILATION_UNIT,
   TAU_NODE_COUNT,
 };
 
@@ -114,17 +130,21 @@ struct tau_node *parse_data_bind(struct tau_token *ahead);
 
 struct tau_node *parse_let_deconstruction(struct tau_token *ahead);
 struct tau_node *parse_proc_signature(struct tau_token *ahead);
-struct tau_node *parse_formal_arg_list(struct tau_token *ahead);
-struct tau_node *parse_formal_arg_item(struct tau_token *ahead);
+struct tau_node *parse_formal_args(struct tau_token *ahead);
+struct tau_node *parse_formal_arg(struct tau_token *ahead);
+struct tau_node *parse_arg_bind(struct tau_token *ahead);
 struct tau_node *parse_proc_deconstruction(struct tau_token *ahead);
 struct tau_node *parse_type_deconstruction(struct tau_token *ahead);
 
 struct tau_node *parse_module_decl(struct tau_token *ahead);
 
+struct tau_node *parse_prototype_suffix(struct tau_token *ahead);
 struct tau_node *parse_let_decl(struct tau_token *ahead);
 struct tau_node *parse_proc_decl(struct tau_token *ahead);
 struct tau_node *parse_type_decl(struct tau_token *ahead);
+struct tau_node *parse_extern_decl(struct tau_token *ahead);
 struct tau_node *parse_decl(struct tau_token *ahead);
+struct tau_node *parse_decls(struct tau_token *ahead);
 
 struct tau_node *parse_compilation_unit(struct tau_token *ahead);
 

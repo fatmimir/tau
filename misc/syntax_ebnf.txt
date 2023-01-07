@@ -63,10 +63,13 @@ type_deconstruction = identifier;
 module_decl = "module", static_lookup_expr;
 
 (* declarations *)
-let_decl = "let", let_deconstruction, ("prototype" | data_bind);
-proc_decl = "proc", proc_deconstruction, ("prototype" | data_bind | block);
-type_decl = "type", type_deconstruction, ("prototype" | data_bind);
+prototype_suffix = "prototype";
+let_decl = "let", let_deconstruction, (prototype_suffix | data_bind);
+proc_decl = "proc", proc_deconstruction, (prototype_suffix | data_bind | block);
+type_decl = "type", type_deconstruction, (prototype_suffix | data_bind);
+extern_decl = "extern", ( let_decl | proc_decl | type_decl );
 decl = module_decl | let_decl | proc_decl;
+decls = { decl, eol };
 
 (* compilation_unit *)
-compilation_unit = module_decl, eol, { decl, eol } eof;
+compilation_unit = module_decl, eol, decls, eof;

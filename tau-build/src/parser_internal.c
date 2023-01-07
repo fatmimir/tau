@@ -847,71 +847,390 @@ struct tau_node *parse_data_bind(struct tau_token *ahead) {
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_let_deconstruction(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_let_deconstruction: ahead cannot be NULL");
+  struct tau_node *identifier = NULL;
+  struct tau_node *type_bind = NULL;
+
+  struct tau_token decons_token = *ahead;
+  identifier = parse_atom(ahead);
+  MUST_OR_FAIL(identifier, ahead, "<identifier>");
+  MUST_OR_FAIL(identifier->token.type == TAU_TOKEN_TYPE_IDENTIFIER, ahead, "<identifier>");
+
+  type_bind = parse_type_bind(ahead);
+  MUST_OR_FAIL(type_bind, ahead, "<type bind>");
+
+  return node_new_binary(TAU_NODE_LET_DECONSTRUCTION, decons_token, identifier, type_bind);
+handle_fail:
+  if (identifier != NULL) {
+    node_free(identifier);
+  }
+
+  if (type_bind != NULL) {
+    node_free(type_bind);
+  }
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_proc_signature(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_proc_signature: ahead cannot be NULL");
+
+  struct tau_node *formal_args = NULL;
+  struct tau_node *type_bind = NULL;
+
+  struct tau_token signature_token = *ahead;
+  formal_args = parse_formal_args(ahead);
+  MUST_OR_FAIL(formal_args, ahead, "<formal args>");
+
+  type_bind = parse_type_bind(ahead);
+  MUST_OR_FAIL(type_bind, ahead, "<type bind>");
+
+  return node_new_binary(TAU_NODE_PROC_SIGNATURE, signature_token, formal_args, type_bind);
+handle_fail:
+  if (formal_args != NULL) {
+    node_free(formal_args);
+  }
+
+  if (type_bind != NULL) {
+    node_free(type_bind);
+  }
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
-struct tau_node *parse_formal_arg_list(struct tau_token *ahead) {
-  assert(ahead != NULL && "parse_formal_arg_list: ahead cannot be NULL");
+struct tau_node *parse_formal_args(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_formal_args: ahead cannot be NULL");
+  struct tau_node *initial = NULL;
+  struct tau_node *attach_to = NULL;
+  struct tau_token formal_args_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_LPAR, TAU_KEYWORD_NONE)) {
+    for (;;) {
+      struct tau_node *arg = parse_formal_arg(ahead);
+      if (arg != NULL) {
+        if (initial == NULL) {
+          initial = arg;
+          attach_to = arg;
+        } else {
+          attach_to->right = arg;
+          attach_to = attach_to->right;
+        }
+
+        if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COMMA, TAU_KEYWORD_NONE)) {
+          continue;
+        }
+      }
+
+      break;
+    }
+    MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RPAR, TAU_KEYWORD_NONE), ahead,
+                 "<closing `)`>");
+
+    return node_new_unary(TAU_NODE_FORMAL_ARGS, formal_args_token, initial);
+  }
+
+handle_fail:
+  if (initial != NULL) {
+    node_free(initial);
+  }
+
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
-struct tau_node *parse_formal_arg_item(struct tau_token *ahead) {
-  assert(ahead != NULL && "parse_formal_arg_item: ahead cannot be NULL");
+struct tau_node *parse_formal_arg(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_formal_arg: ahead cannot be NULL");
+  return node_new_unary(TAU_NODE_FORMAL_ARG, *ahead, parse_arg_bind(ahead));
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_arg_bind(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_arg_bind: ahead cannot be NULL");
+  struct tau_node *identifier = NULL;
+  struct tau_node *type_bind = NULL;
+
+  struct tau_token formal_arg_token = *ahead;
+  identifier = parse_atom(ahead);
+  if (identifier) {
+    type_bind = parse_type_bind(ahead);
+    MUST_OR_FAIL(type_bind, ahead, "<type bind>");
+
+    return node_new_binary(TAU_NODE_ARG_BIND, formal_arg_token, identifier, type_bind);
+  }
+
+  return NULL;
+handle_fail:
+  if (identifier != NULL) {
+    node_free(identifier);
+  }
+
+  if (type_bind != NULL) {
+    node_free(type_bind);
+  }
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_proc_deconstruction(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_proc_deconstruction: ahead cannot be NULL");
+  struct tau_node *identifier = NULL;
+  struct tau_node *signature = NULL;
+
+  struct tau_token decons_token = *ahead;
+  identifier = parse_atom(ahead);
+  MUST_OR_FAIL(identifier, ahead, "<identifier>");
+  MUST_OR_FAIL(identifier->token.type == TAU_TOKEN_TYPE_IDENTIFIER, ahead, "<identifier>");
+
+  signature = parse_proc_signature(ahead);
+  MUST_OR_FAIL(signature, ahead, "<proc signature>");
+
+  return node_new_binary(TAU_NODE_PROC_DECONSTRUCTION, decons_token, identifier, signature);
+handle_fail:
+  if (identifier != NULL) {
+    node_free(identifier);
+  }
+
+  if (signature != NULL) {
+    node_free(signature);
+  }
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_type_deconstruction(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_type_deconstruction: ahead cannot be NULL");
-  return NULL;
+  struct tau_node *identifier = NULL;
+
+  struct tau_token decons_token = *ahead;
+  identifier = parse_atom(ahead);
+  MUST_OR_RETURN_NULL(identifier, ahead, "<identifier>");
+  MUST_OR_RETURN_NULL(identifier->token.type == TAU_TOKEN_TYPE_IDENTIFIER, ahead, "<identifier>");
+
+  return node_new_unary(TAU_NODE_TYPE_DECONSTRUCTION, decons_token, identifier);
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_module_decl(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_module_decl: ahead cannot be NULL");
+  struct tau_token module_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_MODULE)) {
+    struct tau_node *static_lookup_expr = parse_static_lookup_expr(ahead);
+    MUST_OR_RETURN_NULL(static_lookup_expr, ahead, "<static lookup>");
+    return node_new_unary(TAU_NODE_MODULE_DECL, module_token, static_lookup_expr);
+  }
+
+  return NULL;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_prototype_suffix(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_module_decl: ahead cannot be NULL");
+  struct tau_token prototype_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_PROTOTYPE)) {
+    return node_new_empty(TAU_NODE_PROTOTYPE_SUFFIX, prototype_token);
+  }
+
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_let_decl(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_let_decl: ahead cannot be NULL");
+  struct tau_node *deconstruction = NULL;
+  struct tau_node *data_bind = NULL;
+
+  struct tau_token let_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_LET)) {
+    deconstruction = parse_let_deconstruction(ahead);
+    data_bind = parse_prototype_suffix(ahead);
+    if (data_bind == NULL) {
+      data_bind = parse_data_bind(ahead);
+    }
+    MUST_OR_FAIL(data_bind, ahead, "<prototype or data bind>");
+
+    return node_new_binary(TAU_NODE_LET_DECL, let_token, deconstruction, data_bind);
+  }
+
+  return NULL;
+handle_fail:
+  if (deconstruction != NULL) {
+    node_free(deconstruction);
+  }
+
+  if (data_bind != NULL) {
+    node_free(data_bind);
+  }
+
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_proc_decl(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_proc_decl: ahead cannot be NULL");
+  struct tau_node *deconstruction = NULL;
+  struct tau_node *data_bind_or_block = NULL;
+
+  struct tau_token proc_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_PROC)) {
+    deconstruction = parse_proc_deconstruction(ahead);
+    data_bind_or_block = parse_prototype_suffix(ahead);
+    if (data_bind_or_block == NULL) {
+      data_bind_or_block = parse_data_bind(ahead);
+    }
+
+    if (data_bind_or_block == NULL) {
+      data_bind_or_block = parse_block(ahead);
+    }
+
+    MUST_OR_FAIL(data_bind_or_block, ahead, "<prototype, block or data bind>");
+
+    return node_new_binary(TAU_NODE_PROC_DECL, proc_token, deconstruction, data_bind_or_block);
+  }
+
+  return NULL;
+handle_fail:
+  if (deconstruction != NULL) {
+    node_free(deconstruction);
+  }
+
+  if (data_bind_or_block != NULL) {
+    node_free(data_bind_or_block);
+  }
+
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_type_decl(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_type_decl: ahead cannot be NULL");
+  struct tau_node *deconstruction = NULL;
+  struct tau_node *data_bind = NULL;
+
+  struct tau_token type_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_TYPE)) {
+    deconstruction = parse_type_deconstruction(ahead);
+    data_bind = parse_prototype_suffix(ahead);
+    if (data_bind == NULL) {
+      data_bind = parse_data_bind(ahead);
+    }
+    MUST_OR_FAIL(data_bind, ahead, "<prototype or data bind>");
+
+    return node_new_binary(TAU_NODE_TYPE_DECL, type_token, deconstruction, data_bind);
+  }
+
+  return NULL;
+handle_fail:
+  if (deconstruction != NULL) {
+    node_free(deconstruction);
+  }
+
+  if (data_bind != NULL) {
+    node_free(data_bind);
+  }
+
+  return NULL;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_extern_decl(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_extern_decl: ahead cannot be NULL");
+  struct tau_token extern_token = *ahead;
+  struct tau_node *decl = NULL;
+
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_EXTERN)) {
+    decl = parse_let_decl(ahead);
+    if (decl != NULL) {
+      return node_new_unary(TAU_NODE_EXTERN_DECL, extern_token, decl);
+    }
+
+    decl = parse_proc_decl(ahead);
+    if (decl != NULL) {
+      return node_new_unary(TAU_NODE_EXTERN_DECL, extern_token, decl);
+    }
+
+    decl = parse_type_decl(ahead);
+    if (decl != NULL) {
+      return node_new_unary(TAU_NODE_EXTERN_DECL, extern_token, decl);
+    }
+
+    MUST_OR_RETURN_NULL(decl, ahead, "<let, proc or type decl>");
+  }
+
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_decl(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_decl: ahead cannot be NULL");
+  struct tau_node *node = NULL;
+  static const parser_func_t try_parsers[] = {parse_let_decl, parse_proc_decl, parse_type_decl, parse_extern_decl,
+                                              NULL};
+
+  for (int i = 0; try_parsers[i] != NULL; i++) {
+    node = try_parsers[i](ahead);
+    if (node != NULL) {
+      return node_new_unary(TAU_NODE_DECL, node->token, node);
+    }
+  }
+
+  return NULL;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_decls(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_decls: ahead cannot be NULL");
+  struct tau_token start_token = *ahead;
+  struct tau_node *root = NULL;
+  struct tau_node *attach_to = NULL;
+
+  root = node_new_empty(TAU_NODE_DECLS, start_token);
+  for (;;) {
+    struct tau_node *decl = parse_decl(ahead);
+    if (decl != NULL) {
+      if (attach_to == NULL) {
+        root->left = decl;
+        attach_to = root->left;
+      } else {
+        attach_to->right = decl;
+        attach_to = attach_to->right;
+      }
+
+      MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE), ahead,
+                   "<end of line>");
+      continue;
+    }
+
+    break;
+  }
+
+  return root;
+handle_fail:
+  if (root != NULL) {
+    node_free(root);
+  }
+
   return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_compilation_unit(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_compilation_unit: ahead cannot be NULL");
+  struct tau_node *module_decl = NULL;
+  struct tau_node *decls =  NULL;
+
+  struct tau_token start_token = *ahead;
+  module_decl = parse_module_decl(ahead);
+  MUST_OR_FAIL(module_decl, ahead, "<module decl>");
+  MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE), ahead,
+               "<end of line>");
+  decls = parse_decls(ahead);
+  return node_new_binary(TAU_NODE_COMPILATION_UNIT, start_token, module_decl, decls);
+handle_fail:
+  if (module_decl != NULL) {
+    node_free(module_decl);
+  }
+
+  if (decls != NULL) {
+    node_free(decls);
+  }
+
   return NULL;
 }

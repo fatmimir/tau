@@ -83,6 +83,7 @@ enum tau_keyword {
   TAU_KEYWORD_EXTERN,     // extern
   TAU_KEYWORD_PROC,       // proc
   TAU_KEYWORD_LET,        // let
+  TAU_KEYWORD_TYPE,       // type
   TAU_KEYWORD_PROTOTYPE,  // prototype
   TAU_KEYWORD_IF,         // if
   TAU_KEYWORD_ELIF,       // elif

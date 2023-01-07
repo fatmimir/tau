@@ -9,6 +9,7 @@
 
 enum tau_node_type {
   TAU_NODE_NONE,
+  TAU_NODE_PASSING_ARG,
   TAU_NODE_CAST_EXPR,
   TAU_NODE_LOG_OR_EXPR,
   TAU_NODE_LOG_AND_EXPR,
@@ -76,8 +77,8 @@ struct tau_node *parse_index_expr(struct tau_token *ahead);
 struct tau_node *parse_primary_expr(struct tau_token *ahead);
 struct tau_node *parse_atom(struct tau_token *ahead);
 
-struct tau_node *passing_args(struct tau_token *ahead);
-struct tau_node *index_lookup(struct tau_token *ahead);
+struct tau_node *parse_passing_args(struct tau_token *ahead);
+struct tau_node *parse_index_lookup(struct tau_token *ahead);
 
 struct tau_node *parse_return_stmt(struct tau_token *ahead);
 struct tau_node *parse_continue_stmt(struct tau_token *ahead);

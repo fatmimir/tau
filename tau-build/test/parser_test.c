@@ -82,26 +82,32 @@ static void test_parse_index_expr(void **state) {
 
 static void test_parse_call_expr(void **state) {
   UNUSED(state);
-  const char *test = "a(1); a(b)(c); a[b](c);";
+  const char *test = "a(1); a(b, c); a(b)(c); a[b](c);";
   struct tau_token start = tau_token_start(__func__, test, strlen(test));
   struct tau_token token = tau_token_next(start);
   struct tau_node *node = NULL;
 
   node = parse_call_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR a 1)");
+  assert_node_topology(node, "(CALL_EXPR a (PASSING_ARG 1))");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
   node = parse_call_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR (CALL_EXPR a b) c)");
+  assert_node_topology(node, "(CALL_EXPR a (PASSING_ARG b (PASSING_ARG c)))");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+  
+  node = parse_call_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(CALL_EXPR (CALL_EXPR a (PASSING_ARG b)) (PASSING_ARG c))");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
   node = parse_call_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR (INDEX_EXPR a b) c)");
+  assert_node_topology(node, "(CALL_EXPR (INDEX_EXPR a b) (PASSING_ARG c))");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }

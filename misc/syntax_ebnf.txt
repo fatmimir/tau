@@ -14,7 +14,8 @@ expr = cast_expr
 cast_expr = log_or_expr { "as", log_or_expr };
 log_or_expr = log_and_expr, { "||", log_and_expr };
 log_and_expr = rel_expr, { "&&", rel_expr };
-rel_expr = cmp_expr, { "==", bit_or_expr | "!=", bit_or_expr };
+rel_expr = cmp_expr, { "==", cmp_expr | "!=", cmp_expr };
+cmp_expr = bit_and_expr, { ">", bit_and_expr | "<", bit_and_expr | ">=", bit_and_expr | "<=", bit_and_expr };
 bit_or_expr = bit_and_expr, { "|", bit_and_expr | "^" bit_and_expr };
 bit_and_expr = bit_shift_expr, { "&", bit_shift_expr };
 bit_shift_expr = fact_expr, { ">>", term_expr | "<<", term_expr};

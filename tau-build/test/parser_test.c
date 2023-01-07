@@ -366,9 +366,35 @@ static void test_parse_bit_or_expr(void **state) {
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
 
+static void test_parse_cmp_expr(void **state) {
+  UNUSED(state);
+  const char *test = "a>b; a>=b<=c; a<b|c;";
+  struct tau_token start = tau_token_start(__func__, test, strlen(test));
+  struct tau_token token = tau_token_next(start);
+  struct tau_node *node = NULL;
+
+  node = parse_cmp_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(GT_EXPR a b)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_cmp_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(LE_EXPR (GE_EXPR a b) c)");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_cmp_expr(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(LT_EXPR a (BIT_OR_EXPR b c))");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+}
+
 static void test_parse_rel_expr(void **state) {
   UNUSED(state);
-  const char *test = "a==b; a==b!=c; a==b|c;";
+  const char *test = "a==b; a==b!=c; a==b>c;";
   struct tau_token start = tau_token_start(__func__, test, strlen(test));
   struct tau_token token = tau_token_next(start);
   struct tau_node *node = NULL;
@@ -387,7 +413,7 @@ static void test_parse_rel_expr(void **state) {
 
   node = parse_rel_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(EQ_EXPR a (BIT_OR_EXPR b c))");
+  assert_node_topology(node, "(EQ_EXPR a (GT_EXPR b c))");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
@@ -463,6 +489,7 @@ int main() {
       cmocka_unit_test(test_parse_bit_shift_expr),        // <expr> <'>>' '<<'> <expr>,
       cmocka_unit_test(test_parse_bit_and_expr),          // <expr> & <expr>,
       cmocka_unit_test(test_parse_bit_or_expr),           // <expr> <| ^> <expr>,
+      cmocka_unit_test(test_parse_cmp_expr),              // <expr> <'>=' '>' '<' '<='> <expr>,
       cmocka_unit_test(test_parse_rel_expr),              // <expr> <== !=> <expr>,
       cmocka_unit_test(test_parse_log_and_expr),          // <expr> <&&> <expr>,
       cmocka_unit_test(test_parse_log_or_expr),          // <expr> <||> <expr>,

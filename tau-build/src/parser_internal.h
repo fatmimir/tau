@@ -14,6 +14,10 @@ enum tau_node_type {
   TAU_NODE_LOG_AND_EXPR,
   TAU_NODE_EQ_EXPR,
   TAU_NODE_NE_EXPR,
+  TAU_NODE_LT_EXPR,
+  TAU_NODE_LE_EXPR,
+  TAU_NODE_GT_EXPR,
+  TAU_NODE_GE_EXPR,
   TAU_NODE_BIT_OR_EXPR,
   TAU_NODE_BIT_XOR_EXPR,
   TAU_NODE_BIT_AND_EXPR,
@@ -55,6 +59,7 @@ struct tau_node *parse_cast_expr(struct tau_token *ahead);
 struct tau_node *parse_log_or_expr(struct tau_token *ahead);
 struct tau_node *parse_log_and_expr(struct tau_token *ahead);
 struct tau_node *parse_rel_expr(struct tau_token *ahead);
+struct tau_node *parse_cmp_expr(struct tau_token *ahead);
 struct tau_node *parse_bit_or_expr(struct tau_token *ahead);
 struct tau_node *parse_bit_and_expr(struct tau_token *ahead);
 struct tau_node *parse_bit_shift_expr(struct tau_token *ahead);

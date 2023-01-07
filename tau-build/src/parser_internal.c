@@ -109,18 +109,18 @@ handle_fail:
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_rel_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_rel_expr: ahead cannot be NULL");
-  struct tau_node *left = parse_bit_or_expr(ahead);
+  struct tau_node *left = parse_cmp_expr(ahead);
   for (;;) {
     struct tau_token infix_token = *ahead;
     if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_D_EQ, TAU_KEYWORD_NONE)) {
-      struct tau_node *right = parse_bit_or_expr(ahead);
+      struct tau_node *right = parse_cmp_expr(ahead);
       MUST_OR_FAIL(right, ahead, "<expression>");
       left = node_new_binary(TAU_NODE_EQ_EXPR, infix_token, left, right);
       continue;
     }
 
     if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_BANG_EQ, TAU_KEYWORD_NONE)) {
-      struct tau_node *right = parse_bit_or_expr(ahead);
+      struct tau_node *right = parse_cmp_expr(ahead);
       MUST_OR_FAIL(right, ahead, "<expression>");
       left = node_new_binary(TAU_NODE_NE_EXPR, infix_token, left, right);
       continue;
@@ -129,6 +129,40 @@ struct tau_node *parse_rel_expr(struct tau_token *ahead) {
     break;
   }
 
+  return left;
+handle_fail:
+  if (left != NULL) {
+    node_free(left);
+  }
+  return NULL;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_cmp_expr(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_cmp_expr: ahead cannot be NULL");
+  struct tau_node *left = parse_bit_or_expr(ahead);
+  enum tau_punct matching_punct[] = {TAU_PUNCT_LT,  TAU_PUNCT_LT_EQ, TAU_PUNCT_GT,
+                                     TAU_PUNCT_GT_EQ, TAU_PUNCT_NONE};
+  enum tau_node_type producing_types[] = {TAU_NODE_LT_EXPR, TAU_NODE_LE_EXPR, TAU_NODE_GT_EXPR,
+                                          TAU_NODE_GE_EXPR, TAU_NODE_NONE};
+
+  for (;;) {
+    bool should_continue = false;
+    for (int i = 0; matching_punct[i] != TAU_PUNCT_NONE; i++) {
+      struct tau_token infix_token = *ahead;
+      if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, matching_punct[i], TAU_KEYWORD_NONE)) {
+        struct tau_node *right = parse_bit_or_expr(ahead);
+        MUST_OR_FAIL(right, ahead, "<expression>");
+        left = node_new_binary(producing_types[i], infix_token, left, right);
+        should_continue = true;
+        break;
+      }
+    }
+
+    if (!should_continue) {
+      break;
+    }
+  }
   return left;
 handle_fail:
   if (left != NULL) {

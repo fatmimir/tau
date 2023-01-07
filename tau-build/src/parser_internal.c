@@ -55,6 +55,24 @@ struct tau_node *parse_expr(struct tau_token *ahead) {
 
 struct tau_node *parse_cast_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_cast_expr: ahead cannot be NULL");
+  struct tau_node *left = parse_log_or_expr(ahead);
+  for (;;) {
+    struct tau_token as_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_AS)) {
+      struct tau_node *right = parse_log_or_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_CAST_EXPR, as_token, left, right);
+      continue;
+    }
+
+    break;
+  }
+
+  return left;
+handle_fail:
+  if (left != NULL) {
+    node_free(left);
+  }
   return NULL;
 }
 

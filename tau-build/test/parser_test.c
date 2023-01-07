@@ -84,7 +84,6 @@ static void test_parse_index_expr(void **state) {
   assert_node_topology(node, "(INDEX_EXPR a (PASSING_INDEX b (PASSING_INDEX c)))");
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
-
 }
 
 static void test_parse_call_expr(void **state) {

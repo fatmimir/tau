@@ -72,6 +72,8 @@ static struct tau_node *parse_topology_expr(struct tau_token *ahead) {
     struct tau_node *identifier = parse_atom(ahead);
     MUST_OR_FAIL(identifier && identifier->type == TAU_NODE_ATOM, ahead, "<topology identifier>");
     enum tau_node_type target_type = identifier_to_node_type(identifier->token.buf, identifier->token.len);
+    node_free(identifier);
+
     if (!match(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RPAR, TAU_KEYWORD_NONE)) {
       left = parse_topology_expr(ahead);
     }
@@ -86,10 +88,9 @@ static struct tau_node *parse_topology_expr(struct tau_token *ahead) {
     return node;
   }
 
-  struct tau_token atom_start = *ahead;
   struct tau_node *atomic = parse_atom(ahead);
   MUST_OR_FAIL(atomic, ahead, "<atomic topology expression>");
-  return node_new_empty(TAU_NODE_ATOM, atom_start);
+  return atomic;
 handle_fail:
   if (node != NULL) {
     node_free(node);

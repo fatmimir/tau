@@ -44,6 +44,14 @@ enum tau_node_type {
   TAU_NODE_RETURN_STMT,
   TAU_NODE_CONTINUE_STMT,
   TAU_NODE_BREAK_STMT,
+  TAU_NODE_IF_STMT,
+  TAU_NODE_MAIN_BRANCH,
+  TAU_NODE_ELIF_BRANCH,
+  TAU_NODE_ELSE_BRANCH,
+  TAU_NODE_WHILE_STMT,
+  TAU_NODE_STATEMENT_OR_DECL,
+  TAU_NODE_BLOCK,
+  TAU_NODE_EXPR_WITH_BLOCK,
   TAU_NODE_COUNT,
 };
 
@@ -53,6 +61,8 @@ struct tau_node {
   struct tau_node *right;
   enum tau_node_type type;
 };
+
+typedef struct tau_node *(*parser_func_t)(struct tau_token *);
 
 void node_free(struct tau_node *node);
 struct tau_node *node_new_empty(enum tau_node_type type, struct tau_token token);
@@ -88,9 +98,9 @@ struct tau_node *parse_return_stmt(struct tau_token *ahead);
 struct tau_node *parse_continue_stmt(struct tau_token *ahead);
 struct tau_node *parse_break_stmt(struct tau_token *ahead);
 struct tau_node *parse_if_stmt(struct tau_token *ahead);
-struct tau_node *parse_main_case(struct tau_token *ahead);
-struct tau_node *parse_elif_case(struct tau_token *ahead);
-struct tau_node *parse_else_case(struct tau_token *ahead);
+struct tau_node *parse_main_branch(struct tau_token *ahead);
+struct tau_node *parse_elif_branch(struct tau_token *ahead);
+struct tau_node *parse_else_branch(struct tau_token *ahead);
 struct tau_node *parse_while_stmt(struct tau_token *ahead);
 
 struct tau_node *parse_type_bind(struct tau_token *ahead);
@@ -98,6 +108,7 @@ struct tau_node *parse_data_bind(struct tau_token *ahead);
 
 struct tau_node *parse_statement_or_decl(struct tau_token *ahead);
 struct tau_node *parse_block(struct tau_token *ahead);
+struct tau_node *parse_expr_with_block(struct tau_token *ahead);
 
 struct tau_node *parse_let_deconstruction(struct tau_token *ahead);
 struct tau_node *parse_proc_signature(struct tau_token *ahead);

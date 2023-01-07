@@ -54,13 +54,144 @@ static void test_parse_continue_and_break_stmt(void **state) {
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
 
+static void test_parse_if_stmt(void **state) {
+  UNUSED(state);
+  const char *topology = NULL;
+  const char *test =
+      "if a { };"
+      "if a { } elif b { };"
+      "if a { } elif b { } elif c { };"
+      "if a { } elif b { } elif c { } else { };"
+      "if a { } else { };";
+  struct tau_token start = tau_token_start(__func__, test, strlen(test));
+  struct tau_token token = tau_token_next(start);
+  struct tau_node *node = NULL;
+
+  node = parse_if_stmt(&token);
+  assert_non_null(node);
+  topology =
+      ""
+      "(IF_STMT "
+      " (MAIN_BRANCH "
+      "   (EXPR_WITH_BLOCK a "
+      "     (BLOCK)"
+      "   )"
+      " )"
+      ")";
+  assert_node_topology(node, topology);
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_if_stmt(&token);
+  assert_non_null(node);
+  topology =
+      ""
+      "(IF_STMT "
+      " (MAIN_BRANCH "
+      "   (EXPR_WITH_BLOCK a "
+      "     (BLOCK)"
+      "   )"
+      "   (ELIF_BRANCH"
+      "     (EXPR_WITH_BLOCK b"
+      "       (BLOCK)"
+      "     )"
+      "   )"
+      " )"
+      ")";
+  assert_node_topology(node, topology);
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_if_stmt(&token);
+  assert_non_null(node);
+  topology =
+      ""
+      "(IF_STMT "
+      " (MAIN_BRANCH "
+      "   (EXPR_WITH_BLOCK a "
+      "     (BLOCK)"
+      "   )"
+      "   (ELIF_BRANCH"
+      "     (EXPR_WITH_BLOCK b"
+      "       (BLOCK)"
+      "     )"
+      "     (ELIF_BRANCH"
+      "       (EXPR_WITH_BLOCK c"
+      "         (BLOCK)"
+      "       )"
+      "     )"
+      "   )"
+      " )"
+      ")";
+  assert_node_topology(node, topology);
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_if_stmt(&token);
+  assert_non_null(node);
+  topology =
+      ""
+      "(IF_STMT "
+      " (MAIN_BRANCH "
+      "   (EXPR_WITH_BLOCK a "
+      "     (BLOCK)"
+      "   )"
+      "   (ELIF_BRANCH"
+      "     (EXPR_WITH_BLOCK b"
+      "       (BLOCK)"
+      "     )"
+      "     (ELIF_BRANCH"
+      "       (EXPR_WITH_BLOCK c"
+      "         (BLOCK)"
+      "       )"
+      "     )"
+      "   )"
+      " )"
+      " (ELSE_BRANCH (BLOCK))"
+      ")";
+  assert_node_topology(node, topology);
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+
+  node = parse_if_stmt(&token);
+  assert_non_null(node);
+  topology =
+      ""
+      "(IF_STMT "
+      " (MAIN_BRANCH "
+      "   (EXPR_WITH_BLOCK a "
+      "     (BLOCK)"
+      "   )"
+      " )"
+      " (ELSE_BRANCH (BLOCK))"
+      ")";
+  assert_node_topology(node, topology);
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+}
+
+static void test_parse_while_stmt(void **state) {
+  const char *test = "while a { };";
+  struct tau_token start = tau_token_start(__func__, test, strlen(test));
+  struct tau_token token = tau_token_next(start);
+  struct tau_node *node = NULL;
+
+  node = parse_while_stmt(&token);
+  assert_non_null(node);
+  assert_node_topology(node, "(WHILE_STMT (EXPR_WITH_BLOCK a (BLOCK)))");
+  node_free(node);
+  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
+}
+
 int main() {
   UNUSED_TYPE(jmp_buf);
   UNUSED_TYPE(va_list);
 
   const struct CMUnitTest tests[] = {
-      cmocka_unit_test(test_parse_return_stmt),  // return <expr>
+      cmocka_unit_test(test_parse_return_stmt),              // return <expr>
       cmocka_unit_test(test_parse_continue_and_break_stmt),  // continue, break
+      cmocka_unit_test(test_parse_if_stmt),                  // all if variants
+      cmocka_unit_test(test_parse_while_stmt),               // all while variants
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

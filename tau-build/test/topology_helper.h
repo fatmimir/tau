@@ -11,7 +11,7 @@
 #include "../src/log.h"
 #include "../src/parser_internal.h"
 #include "../src/parser_match.h"
-#define HANDLED_IDENTIFIER_TO_NODE_TYPE 36
+#define HANDLED_IDENTIFIER_TO_NODE_TYPE 44
 
 static enum tau_node_type identifier_to_node_type(const char *name, size_t len) {
   const char *anode_names[TAU_NODE_COUNT] = {
@@ -51,6 +51,14 @@ static enum tau_node_type identifier_to_node_type(const char *name, size_t len) 
       [TAU_NODE_RETURN_STMT] = "RETURN_STMT",
       [TAU_NODE_CONTINUE_STMT] = "CONTINUE_STMT",
       [TAU_NODE_BREAK_STMT] = "BREAK_STMT",
+      [TAU_NODE_IF_STMT] = "IF_STMT",
+      [TAU_NODE_MAIN_BRANCH] = "MAIN_BRANCH",
+      [TAU_NODE_ELIF_BRANCH] = "ELIF_BRANCH",
+      [TAU_NODE_ELSE_BRANCH] = "ELSE_BRANCH",
+      [TAU_NODE_WHILE_STMT] = "WHILE_STMT",
+      [TAU_NODE_STATEMENT_OR_DECL] = "STATEMENT_OR_DECL",
+      [TAU_NODE_BLOCK] = "BLOCK",
+      [TAU_NODE_EXPR_WITH_BLOCK] = "EXPR_WITH_BLOCK",
   };
   static_assert(HANDLED_IDENTIFIER_TO_NODE_TYPE == TAU_NODE_COUNT);
 

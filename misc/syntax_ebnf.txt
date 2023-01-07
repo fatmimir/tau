@@ -35,11 +35,11 @@ atom = identifier | literal;
 return_stmt = "return" expr;
 continue_stmt = "continue";
 break_stmt = "break";
-if_stmt = "if" main_case, {elif_case}, [else_case];
-main_case = expr, block;
-elif_case = "elif", expr, block;
-else_case = "else", block;
-while_stmt = "while", expr, block;
+if_stmt = "if" main_branch, {elif_branch}, [else_branch];
+main_branch = expr_with_block;
+elif_branch = "elif", expr_with_block;
+else_branch = "else", block;
+while_stmt = "while", expr_with_block;
 
 (* bindings *)
 type_bind = ":", expr;
@@ -48,6 +48,7 @@ data_bind = "=", expr;
 (* code block *)
 statement_or_decl = statement | decl;
 block = "{", { statement_or_decl, eol }, "}";
+expr_with_block = expr, block;
 
 (* deconstruction *)
 let_deconstruction = identifier, type_bind;

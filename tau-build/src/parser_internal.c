@@ -512,11 +512,8 @@ struct tau_node *parse_index_expr(struct tau_token *ahead) {
 
   for (;;) {
     struct tau_token index_token = *ahead;
-    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_LSBR, TAU_KEYWORD_NONE)) {
-      right = parse_primary_expr(ahead);
-      MUST_OR_FAIL(right, ahead, "<expression>");
-      MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RSBR, TAU_KEYWORD_NONE), ahead,
-                   "<closing `]`>");
+    right = parse_index_lookup(ahead);
+    if (right != NULL) {
       left = node_new_binary(TAU_NODE_INDEX_EXPR, index_token, left, right);
       continue;
     }
@@ -525,16 +522,6 @@ struct tau_node *parse_index_expr(struct tau_token *ahead) {
   }
 
   return left;
-handle_fail:
-  if (left != NULL) {
-    node_free(left);
-  }
-
-  if (right != NULL) {
-    node_free(right);
-  }
-
-  return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
@@ -605,8 +592,42 @@ handle_fail:
   return NULL;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_index_lookup(struct tau_token *ahead) {
-  assert(ahead != NULL && "index_lookup: ahead cannot be NULL");
+  assert(ahead != NULL && "parse_index_lookup: ahead cannot be NULL");
+  struct tau_node *root = NULL;
+  struct tau_node *node = NULL;
+  struct tau_token index_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_LSBR, TAU_KEYWORD_NONE)) {
+    for(;;) {
+      struct tau_token arg_token = *ahead;
+      struct tau_node *arg = parse_expr(ahead);
+      if (arg != NULL) {
+        if (root == NULL) {
+            node = node_new_unary(TAU_NODE_PASSING_INDEX, index_token, arg);
+            root = node;
+        } else {
+            node->right = node_new_unary(TAU_NODE_PASSING_INDEX, arg_token, arg);
+            node = node->right;
+        }
+
+        if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COMMA, TAU_KEYWORD_NONE)) {
+            continue;
+        }
+      }
+
+      break;
+    }
+    MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RSBR, TAU_KEYWORD_NONE), ahead,
+                 "<closing `]`>");
+    return root;
+  }
+
+handle_fail:
+  if (root != NULL) {
+    node_free(root);
+  }
+
   return NULL;
 }
 

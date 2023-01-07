@@ -11,12 +11,13 @@
 #include "../src/log.h"
 #include "../src/parser_internal.h"
 #include "../src/parser_match.h"
-#define HANDLED_IDENTIFIER_TO_NODE_TYPE 32
+#define HANDLED_IDENTIFIER_TO_NODE_TYPE 33
 
 static enum tau_node_type identifier_to_node_type(const char *name, size_t len) {
   const char *anode_names[TAU_NODE_COUNT] = {
       [TAU_NODE_NONE] = "NONE",
       [TAU_NODE_PASSING_ARG] = "PASSING_ARG",
+      [TAU_NODE_PASSING_INDEX] = "PASSING_INDEX",
       [TAU_NODE_CAST_EXPR] = "CAST_EXPR",
       [TAU_NODE_LOG_OR_EXPR] = "LOG_OR_EXPR",
       [TAU_NODE_LOG_AND_EXPR] = "LOG_AND_EXPR",

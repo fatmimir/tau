@@ -41,6 +41,7 @@ enum tau_node_type {
   TAU_NODE_CALL_EXPR,
   TAU_NODE_INDEX_EXPR,
   TAU_NODE_ATOM,
+  TAU_NODE_RETURN_STMT,
   TAU_NODE_COUNT,
 };
 

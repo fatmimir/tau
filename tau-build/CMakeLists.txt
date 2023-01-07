@@ -5,7 +5,8 @@ set(SOURCES src/lexer.c src/log.c src/utf8.c src/parser_match.c src/parser_inter
 
 setup_test(utf8_test ${HEADERS} ${SOURCES})
 setup_test(lexer_test ${HEADERS} ${SOURCES})
-setup_test(parser_test ${HEADERS} ${SOURCES})
+setup_test(parser_expr_test ${HEADERS} ${SOURCES})
+setup_test(parser_stmt_test ${HEADERS} ${SOURCES})
 
 add_library(tau-parser STATIC ${HEADERS} ${SOURCES} src/parser.c)
 target_include_directories(tau-parser PUBLIC include)

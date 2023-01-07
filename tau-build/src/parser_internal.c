@@ -633,6 +633,14 @@ handle_fail:
 
 struct tau_node *parse_return_stmt(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_return_stmt: ahead cannot be NULL");
+
+  struct tau_token return_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_RETURN)) {
+    struct tau_node *stmt_node = node_new_empty(TAU_NODE_RETURN_STMT, return_token);
+    stmt_node->left = parse_expr(ahead);
+    return stmt_node;
+  }
+
   return NULL;
 }
 

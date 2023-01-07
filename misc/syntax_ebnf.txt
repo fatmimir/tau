@@ -53,8 +53,9 @@ expr_with_block = expr, block;
 (* deconstruction *)
 let_deconstruction = identifier, type_bind;
 proc_signature = formal_arg_list, type_bind;
-formal_arg_list = "(", [formal_arg_item, {",", formal_arg_item}, [","]], ")";
-formal_arg_item = identifier, type_bind, ",";
+formal_args = "(", [formal_arg, {",", formal_arg}, [","]], ")";
+formal_arg = arg_bind ",";
+arg_bind = identifier, type_bind;
 proc_deconstruction = identifier, proc_signature;
 type_deconstruction = identifier;
 

@@ -50,7 +50,7 @@ struct tau_node *node_new_binary(enum tau_node_type type, struct tau_token token
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_expr: ahead cannot be NULL");
-  return parse_rel_expr(ahead);
+  return parse_log_or_expr(ahead);
 }
 
 struct tau_node *parse_cast_expr(struct tau_token *ahead) {
@@ -58,13 +58,51 @@ struct tau_node *parse_cast_expr(struct tau_token *ahead) {
   return NULL;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_log_or_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_log_or_expr: ahead cannot be NULL");
+  struct tau_node *left = parse_log_and_expr(ahead);
+  for (;;) {
+    struct tau_token infix_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_D_PIPE, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_log_and_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_LOG_OR_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    break;
+  }
+
+  return left;
+handle_fail:
+  if (left != NULL) {
+    node_free(left);
+  }
   return NULL;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_log_and_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_log_and_expr: ahead cannot be NULL");
+  struct tau_node *left = parse_rel_expr(ahead);
+  for (;;) {
+    struct tau_token infix_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_D_AMP, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_rel_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_LOG_AND_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    break;
+  }
+
+  return left;
+handle_fail:
+  if (left != NULL) {
+    node_free(left);
+  }
   return NULL;
 }
 

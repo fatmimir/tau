@@ -52,7 +52,8 @@ struct tau_node {
 void node_free(struct tau_node *node);
 struct tau_node *node_new_empty(enum tau_node_type type, struct tau_token token);
 struct tau_node *node_new_unary(enum tau_node_type type, struct tau_token token, struct tau_node *operand);
-struct tau_node *node_new_binary(enum tau_node_type type, struct tau_token token, struct tau_node *left, struct tau_node *right);
+struct tau_node *node_new_binary(enum tau_node_type type, struct tau_token token, struct tau_node *left,
+                                 struct tau_node *right);
 
 struct tau_node *parse_expr(struct tau_token *ahead);
 struct tau_node *parse_cast_expr(struct tau_token *ahead);
@@ -108,6 +109,5 @@ struct tau_node *parse_type_decl(struct tau_token *ahead);
 struct tau_node *parse_decl(struct tau_token *ahead);
 
 struct tau_node *parse_compilation_unit(struct tau_token *ahead);
-
 
 #endif  // TAU_PARSER_INTERNAL_H

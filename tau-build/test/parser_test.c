@@ -470,7 +470,6 @@ static void test_parse_log_or_expr(void **state) {
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
 
-
 static void test_parse_cast_expr(void **state) {
   UNUSED(state);
   const char *test = "a as b; a as b as c; a as b || c;";
@@ -502,24 +501,24 @@ int main() {
   UNUSED_TYPE(va_list);
 
   const struct CMUnitTest tests[] = {
-      cmocka_unit_test(test_parse_atom),                  // <identifier> or <literal>
-      cmocka_unit_test(test_parse_primary_expr),          // "(" <expr> ")" or <atom>
-      cmocka_unit_test(test_parse_index_expr),            // <expr> "[" <expr> "]" ...
-      cmocka_unit_test(test_parse_call_expr),             // <expr> "(" <expr> ")" ...
-      cmocka_unit_test(test_parse_unary_expr),            // <op><expr>
-      cmocka_unit_test(test_parse_static_lookup_expr),    // <expr>::<expr> ...
-      cmocka_unit_test(test_parse_value_lookup_expr),     // <expr>.<expr> ...
-      cmocka_unit_test(test_parse_proof_expr),            // <expr>:<expr> ...
-      cmocka_unit_test(test_parse_ref_expr),              // &<expr> ...
-      cmocka_unit_test(test_parse_fact_expr),             // <expr> <* / %> <expr>,
-      cmocka_unit_test(test_parse_term_expr),             // <expr> <+ -> <expr>,
-      cmocka_unit_test(test_parse_bit_shift_expr),        // <expr> <'>>' '<<'> <expr>,
-      cmocka_unit_test(test_parse_bit_and_expr),          // <expr> & <expr>,
-      cmocka_unit_test(test_parse_bit_or_expr),           // <expr> <| ^> <expr>,
-      cmocka_unit_test(test_parse_cmp_expr),              // <expr> <'>=' '>' '<' '<='> <expr>,
-      cmocka_unit_test(test_parse_rel_expr),              // <expr> <== !=> <expr>,
-      cmocka_unit_test(test_parse_log_and_expr),          // <expr> <&&> <expr>,
-      cmocka_unit_test(test_parse_log_or_expr),          // <expr> <||> <expr>,
+      cmocka_unit_test(test_parse_atom),                // <identifier> or <literal>
+      cmocka_unit_test(test_parse_primary_expr),        // "(" <expr> ")" or <atom>
+      cmocka_unit_test(test_parse_index_expr),          // <expr> "[" <expr> "]" ...
+      cmocka_unit_test(test_parse_call_expr),           // <expr> "(" <expr> ")" ...
+      cmocka_unit_test(test_parse_unary_expr),          // <op><expr>
+      cmocka_unit_test(test_parse_static_lookup_expr),  // <expr>::<expr> ...
+      cmocka_unit_test(test_parse_value_lookup_expr),   // <expr>.<expr> ...
+      cmocka_unit_test(test_parse_proof_expr),          // <expr>:<expr> ...
+      cmocka_unit_test(test_parse_ref_expr),            // &<expr> ...
+      cmocka_unit_test(test_parse_fact_expr),           // <expr> <* / %> <expr>,
+      cmocka_unit_test(test_parse_term_expr),           // <expr> <+ -> <expr>,
+      cmocka_unit_test(test_parse_bit_shift_expr),      // <expr> <'>>' '<<'> <expr>,
+      cmocka_unit_test(test_parse_bit_and_expr),        // <expr> & <expr>,
+      cmocka_unit_test(test_parse_bit_or_expr),         // <expr> <| ^> <expr>,
+      cmocka_unit_test(test_parse_cmp_expr),            // <expr> <'>=' '>' '<' '<='> <expr>,
+      cmocka_unit_test(test_parse_rel_expr),            // <expr> <== !=> <expr>,
+      cmocka_unit_test(test_parse_log_and_expr),        // <expr> <&&> <expr>,
+      cmocka_unit_test(test_parse_log_or_expr),         // <expr> <||> <expr>,
       cmocka_unit_test(test_parse_cast_expr),           // <expr> as <expr>,
   };
 

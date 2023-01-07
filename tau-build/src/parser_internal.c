@@ -159,10 +159,9 @@ handle_fail:
 struct tau_node *parse_cmp_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_cmp_expr: ahead cannot be NULL");
   struct tau_node *left = parse_bit_or_expr(ahead);
-  enum tau_punct matching_punct[] = {TAU_PUNCT_LT,  TAU_PUNCT_LT_EQ, TAU_PUNCT_GT,
-                                     TAU_PUNCT_GT_EQ, TAU_PUNCT_NONE};
-  enum tau_node_type producing_types[] = {TAU_NODE_LT_EXPR, TAU_NODE_LE_EXPR, TAU_NODE_GT_EXPR,
-                                          TAU_NODE_GE_EXPR, TAU_NODE_NONE};
+  enum tau_punct matching_punct[] = {TAU_PUNCT_LT, TAU_PUNCT_LT_EQ, TAU_PUNCT_GT, TAU_PUNCT_GT_EQ, TAU_PUNCT_NONE};
+  enum tau_node_type producing_types[] = {TAU_NODE_LT_EXPR, TAU_NODE_LE_EXPR, TAU_NODE_GT_EXPR, TAU_NODE_GE_EXPR,
+                                          TAU_NODE_NONE};
 
   for (;;) {
     bool should_continue = false;
@@ -451,8 +450,7 @@ struct tau_node *parse_unary_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_call_expr: ahead cannot be NULL");
   struct tau_node *node = NULL;
   struct tau_node *root = NULL;
-  enum tau_punct matching_punct[] = {TAU_PUNCT_PLUS,  TAU_PUNCT_HYPHEN, TAU_PUNCT_BANG,
-                                     TAU_PUNCT_TILDE, TAU_PUNCT_NONE};
+  enum tau_punct matching_punct[] = {TAU_PUNCT_PLUS, TAU_PUNCT_HYPHEN, TAU_PUNCT_BANG, TAU_PUNCT_TILDE, TAU_PUNCT_NONE};
   enum tau_node_type producing_types[] = {TAU_NODE_U_POS_EXPR, TAU_NODE_U_NEG_EXPR, TAU_NODE_U_LOG_NOT_EXPR,
                                           TAU_NODE_U_BIT_NOT_EXPR, TAU_NODE_NONE};
   for (;;) {

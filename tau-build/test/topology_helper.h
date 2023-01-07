@@ -79,7 +79,8 @@ static struct tau_node *parse_topology_expr(struct tau_token *ahead) {
     }
 
     node = node_new_binary(target_type, node_start, left, right);
-    MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RPAR, TAU_KEYWORD_NONE), ahead, "<closing topology `)`>");
+    MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_RPAR, TAU_KEYWORD_NONE), ahead,
+                 "<closing topology `)`>");
     return node;
   }
 

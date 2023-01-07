@@ -12,8 +12,6 @@
 
 #include <string.h>
 
-#include "../src/common.h"
-
 static void test_tokenize_spaces(void **state) {
   UNUSED(state);
   const char *buf_data = "    a";
@@ -394,14 +392,14 @@ static void test_non_eol_elision(void **state) {
   assert_int_equal(token.type, TAU_TOKEN_TYPE_PUNCT);
   assert_int_equal(token.punct, TAU_PUNCT_LPAR);
 
-  // Here: lexer should not emit end of line because it's within two '('
+  // Here: lexer should not emit end of line because it's within parenthesis
 
   token = tau_token_next(token);
   assert_int_equal(token.type, TAU_TOKEN_TYPE_PUNCT);
   assert_int_equal(token.punct, TAU_PUNCT_RPAR);
 
   // Here: now it should emit EOL again because line it's expected to end
-  
+
   token = tau_token_next(token);
   assert_int_equal(token.type, TAU_TOKEN_TYPE_EOL);
 }

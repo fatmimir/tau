@@ -631,12 +631,12 @@ handle_fail:
   return NULL;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_return_stmt(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_return_stmt: ahead cannot be NULL");
-
-  struct tau_token return_token = *ahead;
+  struct tau_token stmt_token = *ahead;
   if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_RETURN)) {
-    struct tau_node *stmt_node = node_new_empty(TAU_NODE_RETURN_STMT, return_token);
+    struct tau_node *stmt_node = node_new_empty(TAU_NODE_RETURN_STMT, stmt_token);
     stmt_node->left = parse_expr(ahead);
     return stmt_node;
   }
@@ -644,13 +644,25 @@ struct tau_node *parse_return_stmt(struct tau_token *ahead) {
   return NULL;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_continue_stmt(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_continue_stmt: ahead cannot be NULL");
+  struct tau_token stmt_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_CONTINUE)) {
+    return node_new_empty(TAU_NODE_CONTINUE_STMT, stmt_token);
+  }
+
   return NULL;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_break_stmt(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_break_stmt: ahead cannot be NULL");
+  struct tau_token stmt_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_KEYWORD, TAU_PUNCT_NONE, TAU_KEYWORD_BREAK)) {
+    return node_new_empty(TAU_NODE_BREAK_STMT, stmt_token);
+  }
+
   return NULL;
 }
 

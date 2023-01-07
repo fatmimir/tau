@@ -750,18 +750,6 @@ struct tau_node *parse_while_stmt(struct tau_token *ahead) {
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
-struct tau_node *parse_type_bind(struct tau_token *ahead) {
-  assert(ahead != NULL && "parse_type_bind: ahead cannot be NULL");
-  return NULL;
-}
-
-// NOLINTNEXTLINE(misc-no-recursion)
-struct tau_node *parse_data_bind(struct tau_token *ahead) {
-  assert(ahead != NULL && "parse_data_bind: ahead cannot be NULL");
-  return NULL;
-}
-
-// NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_statement_or_decl(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_statement_or_decl: ahead cannot be NULL");
   struct tau_node *node = NULL;
@@ -830,6 +818,30 @@ struct tau_node *parse_expr_with_block(struct tau_token *ahead) {
   struct tau_node *block = parse_block(ahead);
   MUST_OR_RETURN_NULL(block, ahead, "<block>");
   return node_new_binary(TAU_NODE_EXPR_WITH_BLOCK, expr->token, expr, block);
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_type_bind(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_type_bind: ahead cannot be NULL");
+  struct tau_token bind_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COLON, TAU_KEYWORD_NONE)) {
+    struct tau_node *expr = parse_expr(ahead);
+    return node_new_unary(TAU_NODE_TYPE_BIND, bind_token, expr);
+  }
+
+  return NULL;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_data_bind(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_data_bind: ahead cannot be NULL");
+  struct tau_token bind_token = *ahead;
+  if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_EQ, TAU_KEYWORD_NONE)) {
+    struct tau_node *expr = parse_expr(ahead);
+    return node_new_unary(TAU_NODE_DATA_BIND, bind_token, expr);
+  }
+
+  return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)

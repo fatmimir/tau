@@ -52,6 +52,8 @@ enum tau_node_type {
   TAU_NODE_STATEMENT_OR_DECL,
   TAU_NODE_BLOCK,
   TAU_NODE_EXPR_WITH_BLOCK,
+  TAU_NODE_TYPE_BIND,
+  TAU_NODE_DATA_BIND,
   TAU_NODE_COUNT,
 };
 
@@ -103,12 +105,12 @@ struct tau_node *parse_elif_branch(struct tau_token *ahead);
 struct tau_node *parse_else_branch(struct tau_token *ahead);
 struct tau_node *parse_while_stmt(struct tau_token *ahead);
 
-struct tau_node *parse_type_bind(struct tau_token *ahead);
-struct tau_node *parse_data_bind(struct tau_token *ahead);
-
 struct tau_node *parse_statement_or_decl(struct tau_token *ahead);
 struct tau_node *parse_block(struct tau_token *ahead);
 struct tau_node *parse_expr_with_block(struct tau_token *ahead);
+
+struct tau_node *parse_type_bind(struct tau_token *ahead);
+struct tau_node *parse_data_bind(struct tau_token *ahead);
 
 struct tau_node *parse_let_deconstruction(struct tau_token *ahead);
 struct tau_node *parse_proc_signature(struct tau_token *ahead);

@@ -22,12 +22,12 @@ bit_shift_expr = fact_expr, { ">>", term_expr | "<<", term_expr};
 term_expr = fact_expr, { "+", fact_expr | "-", fact_expr };
 fact_expr = ref_expr, { "*", ref_expr | "/", ref_expr | "%", ref_expr };
 ref_expr = { "&" }, proof_expr;
-proof_expr = static_lookup_expr, { ":", value_lookup_expr };
-value_lookup_expr = static_lookup_expr, { "." static_lookup_expr };
-static_lookup_expr = unary_expr, { "::" unary_expr };
+proof_expr = static_lookup_expr, { ":", unary_expr };
 unary_expr = {"+" | "-" | "!" | "~"}, call_expr;
 call_expr = index_expr, { passing_args };
-index_expr = primary_expr, { index_lookup };
+index_expr = value_lookup_expr, { index_lookup };
+value_lookup_expr = static_lookup_expr, { "." static_lookup_expr };
+static_lookup_expr = primary_expr, { "::" primary_expr };
 primary_expr = "(" expr ")" | atom;
 atom = identifier | literal;
 
@@ -40,6 +40,7 @@ main_branch = expr_with_block;
 elif_branch = "elif", expr_with_block;
 else_branch = "else", block;
 while_stmt = "while", expr_with_block;
+(* TODO(fatmimir): Call / assign statement *)
 
 (* bindings *)
 type_bind = ":", expr;

@@ -41,6 +41,7 @@ else_branch = "else", block;
 while_stmt = "while", expr_with_block;
 assign_stmt = subscription_stmt, ("=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | ">>=" | "<<="), expr;
 subscription_stmt = subscription_expr;
+statement = return_stmt | continue_stmt | break_stmt | if_stmt | while_stmt | assign_stmt;
 
 (* bindings *)
 type_bind = ":", expr;

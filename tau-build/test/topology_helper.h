@@ -11,7 +11,7 @@
 #include "../src/log.h"
 #include "../src/parser_internal.h"
 #include "../src/parser_match.h"
-#define HANDLED_IDENTIFIER_TO_NODE_TYPE 65
+#define HANDLED_IDENTIFIER_TO_NODE_TYPE 74
 
 static enum tau_node_type identifier_to_node_type(const char *name, size_t len) {
   const char *anode_names[TAU_NODE_COUNT] = {
@@ -58,7 +58,16 @@ static enum tau_node_type identifier_to_node_type(const char *name, size_t len) 
       [TAU_NODE_ELSE_BRANCH] = "ELSE_BRANCH",
       [TAU_NODE_WHILE_STMT] = "WHILE_STMT",
       [TAU_NODE_ASSIGN_STMT] = "ASSIGN_STMT",
-      [TAU_NODE_SUBSCRIPTION_STMT] = "SUBSCRIPTION_STMT",
+      [TAU_NODE_ACCUM_ADD_STMT] = "ACCUM_ADD_STMT",
+      [TAU_NODE_ACCUM_SUB_STMT] = "ACCUM_SUB_STMT",
+      [TAU_NODE_ACCUM_MUL_STMT] = "ACCUM_MUL_STMT",
+      [TAU_NODE_ACCUM_DIV_STMT] = "ACCUM_DIV_STMT",
+      [TAU_NODE_ACCUM_REM_STMT] = "ACCUM_REM_STMT",
+      [TAU_NODE_ACCUM_BIT_AND_STMT] = "ACCUM_BIT_AND_STMT",
+      [TAU_NODE_ACCUM_BIT_OR_STMT] = "ACCUM_BIT_OR_STMT",
+      [TAU_NODE_ACCUM_BIT_XOR_STMT] = "ACCUM_BIT_XOR_STMT",
+      [TAU_NODE_ACCUM_RSH_STMT] = "ACCUM_RSH_STMT",
+      [TAU_NODE_ACCUM_LSH_STMT] = "ACCUM_LSH_STMT",
       [TAU_NODE_STATEMENT_OR_DECL] = "STATEMENT_OR_DECL",
       [TAU_NODE_BLOCK] = "BLOCK",
       [TAU_NODE_EXPR_WITH_BLOCK] = "EXPR_WITH_BLOCK",

@@ -737,22 +737,53 @@ struct tau_node *parse_while_stmt(struct tau_token *ahead) {
   return NULL;
 }
 
-/*
 struct tau_node *parse_assign_stmt(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_assign_stmt: ahead cannot be NULL");
+  struct tau_node *node = parse_subscription_stmt(ahead);
+  enum tau_punct matching_puncts[] = {TAU_PUNCT_EQ,       TAU_PUNCT_PLUS_EQ, TAU_PUNCT_HYPHEN_EQ, TAU_PUNCT_AST_EQ,
+                                      TAU_PUNCT_SLASH_EQ, TAU_PUNCT_PCT_EQ,  TAU_PUNCT_AMP_EQ,    TAU_PUNCT_PIPE_EQ,
+                                      TAU_PUNCT_CIRC_EQ,  TAU_PUNCT_D_GT_EQ, TAU_PUNCT_D_LT_EQ,   TAU_PUNCT_NONE};
+  enum tau_node_type producing_types[] = {
+      TAU_NODE_ASSIGN_STMT,        TAU_NODE_ACCUM_ADD_STMT, TAU_NODE_ACCUM_SUB_STMT,     TAU_NODE_ACCUM_MUL_STMT,
+      TAU_NODE_ACCUM_DIV_STMT,     TAU_NODE_ACCUM_REM_STMT, TAU_NODE_ACCUM_BIT_AND_STMT, TAU_NODE_ACCUM_BIT_OR_STMT,
+      TAU_NODE_ACCUM_BIT_XOR_STMT, TAU_NODE_ACCUM_RSH_STMT, TAU_NODE_ACCUM_LSH_STMT,     TAU_NODE_NONE};
 
+  for (int i = 0; matching_puncts[i] != TAU_PUNCT_NONE; i++) {
+    struct tau_token assign_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, matching_puncts[i], TAU_KEYWORD_NONE)) {
+      struct tau_node *expr = parse_expr(ahead);
+      MUST_OR_FAIL(expr, ahead, "<expression>");
+      return node_new_binary(producing_types[i], assign_token, node, expr);
+    }
+  }
+
+  return node;
+handle_fail:
+  if (node != NULL) {
+    node_free(node);
+  }
+
+  return NULL;
 }
 
 struct tau_node *parse_subscription_stmt(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_subscription_stmt: ahead cannot be NULL");
+  struct tau_token subscription_token = *ahead;
+  struct tau_node *subscription_expr = parse_subscription_expr(ahead);
+  if (subscription_expr != NULL) {
+    return subscription_expr;
+  }
 
-}*/
+  return NULL;
+}
 
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_statement_or_decl(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_statement_or_decl: ahead cannot be NULL");
   struct tau_node *node = NULL;
-  static const parser_func_t try_parsers[] = {parse_return_stmt, parse_continue_stmt, parse_break_stmt,
-                                              parse_if_stmt,     parse_while_stmt,    parse_let_decl,
-                                              parse_proc_decl,   parse_type_decl,     NULL};
+  static const parser_func_t try_parsers[] = {
+      parse_return_stmt, parse_continue_stmt, parse_break_stmt, parse_if_stmt,   parse_while_stmt,
+      parse_assign_stmt, parse_let_decl,      parse_proc_decl,  parse_type_decl, NULL};
 
   for (int i = 0; try_parsers[i] != NULL; i++) {
     node = try_parsers[i](ahead);
@@ -1211,13 +1242,12 @@ handle_fail:
 struct tau_node *parse_compilation_unit(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_compilation_unit: ahead cannot be NULL");
   struct tau_node *module_decl = NULL;
-  struct tau_node *decls =  NULL;
+  struct tau_node *decls = NULL;
 
   struct tau_token start_token = *ahead;
   module_decl = parse_module_decl(ahead);
   MUST_OR_FAIL(module_decl, ahead, "<module decl>");
-  MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE), ahead,
-               "<end of line>");
+  MUST_OR_FAIL(match_and_consume(ahead, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE), ahead, "<end of line>");
   decls = parse_decls(ahead);
   return node_new_binary(TAU_NODE_COMPILATION_UNIT, start_token, module_decl, decls);
 handle_fail:

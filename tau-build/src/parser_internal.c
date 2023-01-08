@@ -376,61 +376,13 @@ struct tau_node *parse_ref_expr(struct tau_token *ahead) {
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_proof_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_proof_expr: ahead cannot be NULL");
-  struct tau_node *left = parse_value_lookup_expr(ahead);
-  for (;;) {
-    struct tau_token infix_token = *ahead;
-    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COLON, TAU_KEYWORD_NONE)) {
-      struct tau_node *right = parse_value_lookup_expr(ahead);
-      MUST_OR_FAIL(right, ahead, "<expression>");
-      left = node_new_binary(TAU_NODE_PROOF_EXPR, infix_token, left, right);
-      continue;
-    }
-
-    break;
-  }
-
-  return left;
-handle_fail:
-  if (left != NULL) {
-    node_free(left);
-  }
-  return NULL;
-}
-
-// NOLINTNEXTLINE(misc-no-recursion)
-struct tau_node *parse_value_lookup_expr(struct tau_token *ahead) {
-  assert(ahead != NULL && "parse_value_lookup_expr: ahead cannot be NULL");
-  struct tau_node *left = parse_static_lookup_expr(ahead);
-  for (;;) {
-    struct tau_token infix_token = *ahead;
-    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_DOT, TAU_KEYWORD_NONE)) {
-      struct tau_node *right = parse_static_lookup_expr(ahead);
-      MUST_OR_FAIL(right, ahead, "<expression>");
-      left = node_new_binary(TAU_NODE_VALUE_LOOKUP_EXPR, infix_token, left, right);
-      continue;
-    }
-
-    break;
-  }
-
-  return left;
-handle_fail:
-  if (left != NULL) {
-    node_free(left);
-  }
-  return NULL;
-}
-
-// NOLINTNEXTLINE(misc-no-recursion)
-struct tau_node *parse_static_lookup_expr(struct tau_token *ahead) {
-  assert(ahead != NULL && "parse_static_lookup_expr: ahead cannot be NULL");
   struct tau_node *left = parse_unary_expr(ahead);
   for (;;) {
     struct tau_token infix_token = *ahead;
-    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_D_COLON, TAU_KEYWORD_NONE)) {
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_COLON, TAU_KEYWORD_NONE)) {
       struct tau_node *right = parse_unary_expr(ahead);
       MUST_OR_FAIL(right, ahead, "<expression>");
-      left = node_new_binary(TAU_NODE_STATIC_LOOKUP_EXPR, infix_token, left, right);
+      left = node_new_binary(TAU_NODE_PROOF_EXPR, infix_token, left, right);
       continue;
     }
 
@@ -507,7 +459,7 @@ struct tau_node *parse_call_expr(struct tau_token *ahead) {
 // NOLINTNEXTLINE(misc-no-recursion)
 struct tau_node *parse_index_expr(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_index_expr: ahead cannot be NULL");
-  struct tau_node *left = parse_primary_expr(ahead);
+  struct tau_node *left = parse_value_lookup_expr(ahead);
   struct tau_node *right = NULL;
 
   for (;;) {
@@ -522,6 +474,54 @@ struct tau_node *parse_index_expr(struct tau_token *ahead) {
   }
 
   return left;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_value_lookup_expr(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_value_lookup_expr: ahead cannot be NULL");
+  struct tau_node *left = parse_static_lookup_expr(ahead);
+  for (;;) {
+    struct tau_token infix_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_DOT, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_static_lookup_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_VALUE_LOOKUP_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    break;
+  }
+
+  return left;
+handle_fail:
+  if (left != NULL) {
+    node_free(left);
+  }
+  return NULL;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+struct tau_node *parse_static_lookup_expr(struct tau_token *ahead) {
+  assert(ahead != NULL && "parse_static_lookup_expr: ahead cannot be NULL");
+  struct tau_node *left = parse_primary_expr(ahead);
+  for (;;) {
+    struct tau_token infix_token = *ahead;
+    if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_D_COLON, TAU_KEYWORD_NONE)) {
+      struct tau_node *right = parse_primary_expr(ahead);
+      MUST_OR_FAIL(right, ahead, "<expression>");
+      left = node_new_binary(TAU_NODE_STATIC_LOOKUP_EXPR, infix_token, left, right);
+      continue;
+    }
+
+    break;
+  }
+
+  return left;
+handle_fail:
+  if (left != NULL) {
+    node_free(left);
+  }
+  return NULL;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
@@ -560,13 +560,14 @@ struct tau_node *parse_passing_args(struct tau_token *ahead) {
   struct tau_node *node = NULL;
   struct tau_token call_token = *ahead;
   if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_LPAR, TAU_KEYWORD_NONE)) {
+    root = node_new_empty(TAU_NODE_PASSING_ARGS, *ahead);
     for (;;) {
       struct tau_token arg_token = *ahead;
       struct tau_node *arg = parse_expr(ahead);
       if (arg != NULL) {
-        if (root == NULL) {
+        if (node == NULL) {
           node = node_new_unary(TAU_NODE_PASSING_ARG, call_token, arg);
-          root = node;
+          root->left = node;
         } else {
           node->right = node_new_unary(TAU_NODE_PASSING_ARG, arg_token, arg);
           node = node->right;
@@ -599,13 +600,14 @@ struct tau_node *parse_index_lookup(struct tau_token *ahead) {
   struct tau_node *node = NULL;
   struct tau_token index_token = *ahead;
   if (match_and_consume(ahead, TAU_TOKEN_TYPE_PUNCT, TAU_PUNCT_LSBR, TAU_KEYWORD_NONE)) {
+    root = node_new_empty(TAU_NODE_PASSING_INDEXES, *ahead);
     for (;;) {
       struct tau_token arg_token = *ahead;
       struct tau_node *arg = parse_expr(ahead);
       if (arg != NULL) {
-        if (root == NULL) {
+        if (node == NULL) {
           node = node_new_unary(TAU_NODE_PASSING_INDEX, index_token, arg);
-          root = node;
+          root->left = node;
         } else {
           node->right = node_new_unary(TAU_NODE_PASSING_INDEX, arg_token, arg);
           node = node->right;

@@ -39,7 +39,8 @@ main_branch = expr_with_block;
 elif_branch = "elif", expr_with_block;
 else_branch = "else", block;
 while_stmt = "while", expr_with_block;
-(* TODO(fatmimir): Call / assign statement *)
+assign_stmt = subscription_stmt, ("=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | ">>=" | "<<="), expr;
+subscription_stmt = subscription_expr;
 
 (* bindings *)
 type_bind = ":", expr;

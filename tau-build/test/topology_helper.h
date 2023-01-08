@@ -11,15 +11,15 @@
 #include "../src/log.h"
 #include "../src/parser_internal.h"
 #include "../src/parser_match.h"
-#define HANDLED_IDENTIFIER_TO_NODE_TYPE 64
+#define HANDLED_IDENTIFIER_TO_NODE_TYPE 65
 
 static enum tau_node_type identifier_to_node_type(const char *name, size_t len) {
   const char *anode_names[TAU_NODE_COUNT] = {
       [TAU_NODE_NONE] = "NONE",
-      [TAU_NODE_PASSING_ARGS] = "PASSING_ARGS",
-      [TAU_NODE_PASSING_ARG] = "PASSING_ARG",
-      [TAU_NODE_PASSING_INDEXES] = "PASSING_INDEXES",
-      [TAU_NODE_PASSING_INDEX] = "PASSING_INDEX",
+      [TAU_NODE_CALLING_ARGS] = "CALLING_ARGS",
+      [TAU_NODE_CALLING_ARG] = "CALLING_ARG",
+      [TAU_NODE_INDEXING_ARGS] = "INDEXING_ARGS",
+      [TAU_NODE_INDEXING_ARG] = "INDEXING_ARG",
       [TAU_NODE_CAST_EXPR] = "CAST_EXPR",
       [TAU_NODE_LOG_OR_EXPR] = "LOG_OR_EXPR",
       [TAU_NODE_LOG_AND_EXPR] = "LOG_AND_EXPR",
@@ -47,8 +47,7 @@ static enum tau_node_type identifier_to_node_type(const char *name, size_t len) 
       [TAU_NODE_U_NEG_EXPR] = "U_NEG_EXPR",
       [TAU_NODE_U_LOG_NOT_EXPR] = "U_LOG_NOT_EXPR",
       [TAU_NODE_U_BIT_NOT_EXPR] = "U_BIT_NOT_EXPR",
-      [TAU_NODE_CALL_EXPR] = "CALL_EXPR",
-      [TAU_NODE_INDEX_EXPR] = "INDEX_EXPR",
+      [TAU_NODE_SUBSCRIPTION_EXPR] = "SUBSCRIPTION_EXPR",
       [TAU_NODE_ATOM] = "ATOM",
       [TAU_NODE_RETURN_STMT] = "RETURN_STMT",
       [TAU_NODE_CONTINUE_STMT] = "CONTINUE_STMT",
@@ -58,6 +57,8 @@ static enum tau_node_type identifier_to_node_type(const char *name, size_t len) 
       [TAU_NODE_ELIF_BRANCH] = "ELIF_BRANCH",
       [TAU_NODE_ELSE_BRANCH] = "ELSE_BRANCH",
       [TAU_NODE_WHILE_STMT] = "WHILE_STMT",
+      [TAU_NODE_ASSIGN_STMT] = "ASSIGN_STMT",
+      [TAU_NODE_SUBSCRIPTION_STMT] = "SUBSCRIPTION_STMT",
       [TAU_NODE_STATEMENT_OR_DECL] = "STATEMENT_OR_DECL",
       [TAU_NODE_BLOCK] = "BLOCK",
       [TAU_NODE_EXPR_WITH_BLOCK] = "EXPR_WITH_BLOCK",

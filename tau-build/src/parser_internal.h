@@ -9,10 +9,10 @@
 
 enum tau_node_type {
   TAU_NODE_NONE,
-  TAU_NODE_PASSING_ARGS,
-  TAU_NODE_PASSING_ARG,
-  TAU_NODE_PASSING_INDEXES,
-  TAU_NODE_PASSING_INDEX,
+  TAU_NODE_CALLING_ARGS,
+  TAU_NODE_CALLING_ARG,
+  TAU_NODE_INDEXING_ARGS,
+  TAU_NODE_INDEXING_ARG,
   TAU_NODE_CAST_EXPR,
   TAU_NODE_LOG_OR_EXPR,
   TAU_NODE_LOG_AND_EXPR,
@@ -40,8 +40,7 @@ enum tau_node_type {
   TAU_NODE_U_NEG_EXPR,
   TAU_NODE_U_LOG_NOT_EXPR,
   TAU_NODE_U_BIT_NOT_EXPR,
-  TAU_NODE_CALL_EXPR,
-  TAU_NODE_INDEX_EXPR,
+  TAU_NODE_SUBSCRIPTION_EXPR,
   TAU_NODE_ATOM,
   TAU_NODE_RETURN_STMT,
   TAU_NODE_CONTINUE_STMT,
@@ -51,6 +50,8 @@ enum tau_node_type {
   TAU_NODE_ELIF_BRANCH,
   TAU_NODE_ELSE_BRANCH,
   TAU_NODE_WHILE_STMT,
+  TAU_NODE_ASSIGN_STMT,
+  TAU_NODE_SUBSCRIPTION_STMT,
   TAU_NODE_STATEMENT_OR_DECL,
   TAU_NODE_BLOCK,
   TAU_NODE_EXPR_WITH_BLOCK,
@@ -104,15 +105,14 @@ struct tau_node *parse_fact_expr(struct tau_token *ahead);
 struct tau_node *parse_ref_expr(struct tau_token *ahead);
 struct tau_node *parse_proof_expr(struct tau_token *ahead);
 struct tau_node *parse_unary_expr(struct tau_token *ahead);
-struct tau_node *parse_call_expr(struct tau_token *ahead);
-struct tau_node *parse_index_expr(struct tau_token *ahead);
+struct tau_node *parse_subscription_expr(struct tau_token *ahead);
 struct tau_node *parse_value_lookup_expr(struct tau_token *ahead);
 struct tau_node *parse_static_lookup_expr(struct tau_token *ahead);
 struct tau_node *parse_primary_expr(struct tau_token *ahead);
 struct tau_node *parse_atom(struct tau_token *ahead);
 
-struct tau_node *parse_passing_args(struct tau_token *ahead);
-struct tau_node *parse_index_lookup(struct tau_token *ahead);
+struct tau_node *parse_calling_args(struct tau_token *ahead);
+struct tau_node *parse_indexing_args(struct tau_token *ahead);
 
 struct tau_node *parse_return_stmt(struct tau_token *ahead);
 struct tau_node *parse_continue_stmt(struct tau_token *ahead);
@@ -122,6 +122,8 @@ struct tau_node *parse_main_branch(struct tau_token *ahead);
 struct tau_node *parse_elif_branch(struct tau_token *ahead);
 struct tau_node *parse_else_branch(struct tau_token *ahead);
 struct tau_node *parse_while_stmt(struct tau_token *ahead);
+struct tau_node *parse_assign_stmt(struct tau_token *ahead);
+struct tau_node *parse_subscription_stmt(struct tau_token *ahead);
 
 struct tau_node *parse_statement_or_decl(struct tau_token *ahead);
 struct tau_node *parse_block(struct tau_token *ahead);

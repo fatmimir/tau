@@ -112,85 +112,91 @@ static void test_parse_value_lookup_expr(void **state) {
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
 
-
-static void test_parse_index_expr(void **state) {
+static void test_parse_subscription_expr(void **state) {
   UNUSED(state);
-  const char *test = "a[1]; a[b][c]; a[b, c]; a[];";
+  const char *test =
+      "a();"
+      "b(1);"
+      "c(1, 2);"
+      "d(1)(2);"
+      "e[];"
+      "f[1];"
+      "g[1, 2];"
+      "h[1][2];"
+      "i[1](2);"
+      "j(1)[2];";
   struct tau_token start = tau_token_start(__func__, test, strlen(test));
   struct tau_token token = tau_token_next(start);
   struct tau_node *node = NULL;
+  const char *topology = NULL;
 
-  node = parse_index_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(INDEX_EXPR a (PASSING_INDEXES (PASSING_INDEX 1)))");
+  topology = "(SUBSCRIPTION_EXPR a (CALLING_ARGS))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_index_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(INDEX_EXPR (INDEX_EXPR a (PASSING_INDEXES (PASSING_INDEX b))) (PASSING_INDEXES (PASSING_INDEX c)))");
+  topology = "(SUBSCRIPTION_EXPR b (CALLING_ARGS (CALLING_ARG 1)))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_index_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(INDEX_EXPR a (PASSING_INDEXES (PASSING_INDEX b (PASSING_INDEX c))))");
+  topology = "(SUBSCRIPTION_EXPR c (CALLING_ARGS (CALLING_ARG 1 (CALLING_ARG 2))))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_index_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(INDEX_EXPR a (PASSING_INDEXES))");
-  node_free(node);
-  assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
-}
-
-static void test_parse_call_expr(void **state) {
-  UNUSED(state);
-  const char *test = "a(); a(1); a(b, c); a(b)(c); a[b](c); a::b(); a.b();";
-  struct tau_token start = tau_token_start(__func__, test, strlen(test));
-  struct tau_token token = tau_token_next(start);
-  struct tau_node *node = NULL;
-
-  node = parse_call_expr(&token);
-  assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR a (PASSING_ARGS))");
+  topology = "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR d (CALLING_ARGS (CALLING_ARG 1))) (CALLING_ARGS (CALLING_ARG 2)))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_call_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR a (PASSING_ARGS (PASSING_ARG 1)))");
+  topology = "(SUBSCRIPTION_EXPR e (INDEXING_ARGS))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_call_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR a (PASSING_ARGS (PASSING_ARG b (PASSING_ARG c))))");
+  topology = "(SUBSCRIPTION_EXPR f (INDEXING_ARGS (INDEXING_ARG 1)))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_call_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR (CALL_EXPR a (PASSING_ARGS (PASSING_ARG b))) (PASSING_ARGS (PASSING_ARG c)))");
+  topology = "(SUBSCRIPTION_EXPR g (INDEXING_ARGS (INDEXING_ARG 1 (INDEXING_ARG 2))))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_call_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR (INDEX_EXPR a (PASSING_INDEXES (PASSING_INDEX b))) (PASSING_ARGS (PASSING_ARG c)))");
+  topology = "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR h (INDEXING_ARGS (INDEXING_ARG 1))) (INDEXING_ARGS (INDEXING_ARG 2)))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_call_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR (STATIC_LOOKUP_EXPR a b) (PASSING_ARGS))");
+  topology = "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR i (INDEXING_ARGS (INDEXING_ARG 1))) (CALLING_ARGS (CALLING_ARG 2)))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
-  node = parse_call_expr(&token);
+  node = parse_subscription_expr(&token);
   assert_non_null(node);
-  assert_node_topology(node, "(CALL_EXPR (VALUE_LOOKUP_EXPR a b) (PASSING_ARGS))");
+  topology = "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR j (CALLING_ARGS (CALLING_ARG 1))) (INDEXING_ARGS (INDEXING_ARG 2)))";
+  assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 }
@@ -542,8 +548,7 @@ int main() {
       cmocka_unit_test(test_parse_primary_expr),        // "(" <expr> ")" or <atom>
       cmocka_unit_test(test_parse_static_lookup_expr),  // <expr>::<expr> ...
       cmocka_unit_test(test_parse_value_lookup_expr),   // <expr>.<expr> ...
-      cmocka_unit_test(test_parse_index_expr),          // <expr> "[" <expr> "]" ...
-      cmocka_unit_test(test_parse_call_expr),           // <expr> "(" <expr> ")" ...
+      cmocka_unit_test(test_parse_subscription_expr),   // <expr> "(" <expr> ")" ...
       cmocka_unit_test(test_parse_unary_expr),          // <op><expr>
       cmocka_unit_test(test_parse_proof_expr),          // <expr>:<expr> ...
       cmocka_unit_test(test_parse_ref_expr),            // &<expr> ...

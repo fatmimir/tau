@@ -6,8 +6,8 @@ literal = ? any literal emitted by lexer (string, numeric, boolean, nil and unit
 (* notice: lexer will automatically detect when a space and a new line are required, so we ignore them on the parser *)
 
 (* args and lookups *)
-passing_args = "(" [expr, {",", expr}, [","]], ")";
-index_lookup = "[" expr "]";
+calling_args = "(", [expr, {",", expr}, [","]], ")";
+indexing_args = "[", [expr, {",", expr}, [","]], "]";
 
 (* expressions *)
 expr = cast_expr
@@ -23,9 +23,8 @@ term_expr = fact_expr, { "+", fact_expr | "-", fact_expr };
 fact_expr = ref_expr, { "*", ref_expr | "/", ref_expr | "%", ref_expr };
 ref_expr = { "&" }, proof_expr;
 proof_expr = static_lookup_expr, { ":", unary_expr };
-unary_expr = {"+" | "-" | "!" | "~"}, call_expr;
-call_expr = index_expr, { passing_args };
-index_expr = value_lookup_expr, { index_lookup };
+unary_expr = {"+" | "-" | "!" | "~"}, subscription_expr;
+subscription_expr = value_lookup_expr, { calling_args | indexing_args };
 value_lookup_expr = static_lookup_expr, { "." static_lookup_expr };
 static_lookup_expr = primary_expr, { "::" primary_expr };
 primary_expr = "(" expr ")" | atom;

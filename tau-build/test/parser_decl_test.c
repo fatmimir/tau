@@ -250,7 +250,8 @@ static void test_parse_decl(void **state) {
 
 static void test_parse_decls(void **state) {
   UNUSED(state);
-  // we test using type-decl because they are easier to write down as topology trees, in theory all decls should be parsed
+  // we test using type-decl because they are easier to write down as topology trees, in theory all decls should be
+  // parsed
   const char *test =
       "type A prototype;"
       "type B prototype;"

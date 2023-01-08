@@ -290,7 +290,7 @@ static void test_parse_subscription_stmt(void **state) {
   struct tau_token token = tau_token_next(start);
   struct tau_node *node = NULL;
 
-  node = parse_assign_stmt(&token); // one upper level because we want to descend
+  node = parse_assign_stmt(&token);  // one upper level because we want to descend
   assert_non_null(node);
   assert_node_topology(node, "(SUBSCRIPTION_EXPR a (CALLING_ARGS))");
   node_free(node);

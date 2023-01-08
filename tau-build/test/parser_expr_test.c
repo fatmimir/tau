@@ -181,21 +181,24 @@ static void test_parse_subscription_expr(void **state) {
 
   node = parse_subscription_expr(&token);
   assert_non_null(node);
-  topology = "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR h (INDEXING_ARGS (INDEXING_ARG 1))) (INDEXING_ARGS (INDEXING_ARG 2)))";
+  topology =
+      "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR h (INDEXING_ARGS (INDEXING_ARG 1))) (INDEXING_ARGS (INDEXING_ARG 2)))";
   assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
   node = parse_subscription_expr(&token);
   assert_non_null(node);
-  topology = "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR i (INDEXING_ARGS (INDEXING_ARG 1))) (CALLING_ARGS (CALLING_ARG 2)))";
+  topology =
+      "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR i (INDEXING_ARGS (INDEXING_ARG 1))) (CALLING_ARGS (CALLING_ARG 2)))";
   assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));
 
   node = parse_subscription_expr(&token);
   assert_non_null(node);
-  topology = "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR j (CALLING_ARGS (CALLING_ARG 1))) (INDEXING_ARGS (INDEXING_ARG 2)))";
+  topology =
+      "(SUBSCRIPTION_EXPR (SUBSCRIPTION_EXPR j (CALLING_ARGS (CALLING_ARG 1))) (INDEXING_ARGS (INDEXING_ARG 2)))";
   assert_node_topology(node, topology);
   node_free(node);
   assert_true(match_and_consume(&token, TAU_TOKEN_TYPE_EOL, TAU_PUNCT_NONE, TAU_KEYWORD_NONE));

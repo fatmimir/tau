@@ -33,13 +33,13 @@ static void test_tau_dec_bytes_to_cp(void **state) {
   (void)state;
 
   uint32_t codepoint = 0L;
-  assert_int_equal(tau_dec_bytes_to_cp("E", &codepoint), 1);
+  assert_int_equal(tau_dec_bytes_to_cp("E\0\0\0", &codepoint), 1);
   assert_int_equal(codepoint, 0x0045);
 
-  assert_int_equal(tau_dec_bytes_to_cp("ǂ", &codepoint), 2);
+  assert_int_equal(tau_dec_bytes_to_cp("ǂ\0\0", &codepoint), 2);
   assert_int_equal(codepoint, 0x01C2);
 
-  assert_int_equal(tau_dec_bytes_to_cp("㊗", &codepoint), 3);
+  assert_int_equal(tau_dec_bytes_to_cp("㊗\0", &codepoint), 3);
   assert_int_equal(codepoint, 0x3297);
 
   assert_int_equal(tau_dec_bytes_to_cp("😌", &codepoint), 4);
@@ -52,15 +52,15 @@ static void test_boundary_condition(void **state) {
 
   // 2.1 First possible sequence of a certain length
   // 2.1.1 1 byte (U-00000000):
-  assert_int_equal(tau_dec_bytes_to_cp("\x00", &codepoint), 1);
+  assert_int_equal(tau_dec_bytes_to_cp("\x00\0\0\0", &codepoint), 1);
   assert_int_equal(codepoint, UNICODE_REPLACEMENT_CHARACTER);
 
   // 2.1.2 2 bytes (U-00000080):
-  assert_int_equal(tau_dec_bytes_to_cp("\xC1\x80", &codepoint), 2);
+  assert_int_equal(tau_dec_bytes_to_cp("\xC1\x80\0\0", &codepoint), 2);
   assert_int_equal(codepoint, UNICODE_REPLACEMENT_CHARACTER);
 
   // 2.1.3 3 bytes (U-00000800):
-  assert_int_equal(tau_dec_bytes_to_cp("\xE0\xA0\x80", &codepoint), 3);
+  assert_int_equal(tau_dec_bytes_to_cp("\xE0\xA0\x80\0", &codepoint), 3);
   assert_int_equal(codepoint, UNICODE_REPLACEMENT_CHARACTER);
 
   // 2.1.4 4 bytes (U-00010000):
@@ -77,11 +77,11 @@ static void test_boundary_condition(void **state) {
 
   // 2.2 Last possible sequence of a certain length
   // 2.2.1 1 byte  (U-0000007F):
-  assert_int_equal(tau_dec_bytes_to_cp("\x7F", &codepoint), 1);
+  assert_int_equal(tau_dec_bytes_to_cp("\x7F\0\0", &codepoint), 1);
   assert_int_equal(codepoint, UNICODE_REPLACEMENT_CHARACTER);
 
   // 2.2.2  2 bytes (U-000007FF):
-  assert_int_equal(tau_dec_bytes_to_cp("\xDF\xBF", &codepoint), 2);
+  assert_int_equal(tau_dec_bytes_to_cp("\xDF\xBF\0", &codepoint), 2);
   assert_int_equal(codepoint, UNICODE_REPLACEMENT_CHARACTER);
 
   // 2.2.3  3 bytes (U-0000FFFF):

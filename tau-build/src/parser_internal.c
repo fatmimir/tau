@@ -768,7 +768,6 @@ handle_fail:
 
 struct tau_node *parse_subscription_stmt(struct tau_token *ahead) {
   assert(ahead != NULL && "parse_subscription_stmt: ahead cannot be NULL");
-  struct tau_token subscription_token = *ahead;
   struct tau_node *subscription_expr = parse_subscription_expr(ahead);
   if (subscription_expr != NULL) {
     return subscription_expr;
